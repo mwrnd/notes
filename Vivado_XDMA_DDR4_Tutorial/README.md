@@ -91,7 +91,7 @@ In the Diagram editor window, click **Add IP** and search for `ddr4`. Double-cli
 
 ![Add DDR4 IP](img/Add_IP_DDR4.png)
 
-Under the *Basic* tab in DDR4 Customization, write **1428** as the *Memory Device Interface Speed (ps)*, choose **9996 (100.04MHz)** as the *Reference Input Clock Speed (ps)*, choose `MT40A1G16WBU-083E` as the *Memory Part*, choose **64** as the *Data Width*, and **DM NO DBI** as the *Data Mask and DBI*. `1428ps=700MHz=1400MT` is the slowest speed possible for DDR4 and a 64-bit width prevents ECC from being enabled. This is meant to be used for basic functionality testing. Note parts rated to `-083E` should be able to handle up to `938ps=1333MHz=2666MT`.
+Under the *Basic* tab in DDR4 Customization, write **1428** as the *Memory Device Interface Speed (ps)*, choose **9996 (100.04MHz)** as the *Reference Input Clock Speed (ps)*, choose `MT40A1G16WBU-083E` as the *Memory Part*, choose **64** as the *Data Width*, and **DM NO DBI** as the *Data Mask and DBI*. `1428ps=700MHz=1400MT` is slow for DDR4 and a 64-bit width prevents ECC from being enabled. This is meant to be used for testing. The Innova-2 has [`MT40A1G16KNR-075`](https://www.micron.com/products/dram/ddr4-sdram/part-catalog/mt40a1g16knr-075) ICs with [D9WFR FBGA Code](https://www.micron.com/support/tools-and-utilities/fbga?fbga=D9WFR#pnlFBGA) that should be able to handle up to `750ps=1333MHz=2666MT`. This is meant to be used for basic functionality testing. Note parts rated to `-083` should be able to handle up to `833ps=1200MHz=2400MT`.
 
 ![Customize Basic DDR4 Settings](img/Customize_DDR4_Basic.png)
 
