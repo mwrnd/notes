@@ -91,7 +91,7 @@ In the Diagram editor window, click **Add IP** and search for `ddr4`. Double-cli
 
 ![Add DDR4 IP](img/Add_IP_DDR4.png)
 
-Under the *Basic* tab in DDR4 Customization, write **1428** as the *Memory Device Interface Speed (ps)*, choose **9996 (100.04MHz)** as the *Reference Input Clock Speed (ps)*, choose `MT40A1G16WBU-083E` as the *Memory Part*, choose **64** as the *Data Width*, and **DM NO DBI** as the *Data Mask and DBI*. `1428ps=700MHz=1400MT` is slow for DDR4 and a 64-bit width prevents ECC from being enabled. This is meant to be used for testing. The Innova-2 has [`MT40A1G16KNR-075`](https://www.micron.com/products/dram/ddr4-sdram/part-catalog/mt40a1g16knr-075) ICs with [D9WFR FBGA Code](https://www.micron.com/support/tools-and-utilities/fbga?fbga=D9WFR#pnlFBGA) that should be able to handle up to `750ps=1333MHz=2666MT`. This is meant to be used for basic functionality testing. Note parts rated to `-083` should be able to handle up to `833ps=1200MHz=2400MT`.
+Under the *Basic* tab in DDR4 Customization, write **1428** as the *Memory Device Interface Speed (ps)*, choose **9996 (100.04MHz)** as the *Reference Input Clock Speed (ps)*, choose `MT40A1G16WBU-083E` as the *Memory Part*, choose **64** as the *Data Width*, and **DM NO DBI** as the *Data Mask and DBI*. `1428ps=700MHz=1400MT` is slow for DDR4 and a 64-bit width prevents ECC from being enabled. This is meant to be used for testing. The Innova-2 has [`MT40A1G16KNR-075`](https://www.micron.com/products/dram/ddr4-sdram/part-catalog/mt40a1g16knr-075) ICs with [D9WFR FBGA Code](https://www.micron.com/support/tools-and-utilities/fbga?fbga=D9WFR#pnlFBGA) that should be able to handle up to `750ps=1333MHz=2666MT`. Note parts rated to `-083` should be able to handle up to `833ps=1200MHz=2400MT`.
 
 ![Customize Basic DDR4 Settings](img/Customize_DDR4_Basic.png)
 
@@ -107,11 +107,11 @@ Select all the ports for automatic connection.
 
 ![Select All for Automation](img/DDR4_Run_Connection_Automation_Customize.png)
 
-This will generate a [*Processor System Reset* Block](???) that controls the Active-Low Asynchronous Reset (*aresetn*) for the design.
+This will generate a [*Processor System Reset*](https://docs.xilinx.com/v/u/en-US/pg164-proc-sys-reset) Block that controls the Active-Low Asynchronous Reset (*aresetn*) for the design. Connect *peripheral_aresetn[0:0]* to *c0_ddr4_aresetn* and AXI SmartConnect *aresetn*.
 
 ![Processor System Reset Controls aresetn](img/Processor_System_Reset_Controls_aresetn.png)
 
-Connect the DDR4 User Interface Clock (*c0_ddr4_ui_clk*) to AXI SmartConnect *aclk1*. This will be the slowest clock in the design.
+Connect the DDR4 User Interface Clock (*c0_ddr4_ui_clk*) to AXI SmartConnect *aclk1*. This will be the slowest clock in the design at 100MHz.
 
 ![DDR4 UI CLK is SmartConnect ACLK1](img/DDR4_UI_CLK_is_SmartConnect_ACLK1.png)
 
@@ -123,7 +123,7 @@ Delete the DDR4 System Reset (*sys_rst*) signal and port (*reset_rtl_0_0*). A DD
 
 ![Delete DDR4 sys rst](img/DDR4_sys_rst_Delete.png)
 
-In the Diagram editor window, click **Add IP** and search for `vector`. Double-click **Utility Vector Logic** to add a basic inverter gate.
+In the Diagram editor window, click **Add IP** and search for `vector`. Double-click **Utility Vector Logic** to add a basic [inverter gate](https://docs.xilinx.com/r/2021.2-English/ug994-vivado-ip-subsystems/Utility-Vector-Logic).
 
 ![Add Utility Vector Logic IP](img/Add_IP_Vector_Logic.png)
 
@@ -143,7 +143,7 @@ In the Diagram editor window, click **Add IP** and search for `counter`. Double-
 
 ![Add Counter IP](img/Add_IP_Counter.png)
 
-Set the *Output Width* as **28**. XDMA uses a 250MHz clock so `250000000/(2^28)~=0.9313Hz`
+Set the *Output Width* as **28**. XDMA uses a 250MHz AXI Interface clock so `250000000/(2^28)~=0.9313Hz`
 
 ![Customize Counter](img/Customize_Counter.png)
 
@@ -229,7 +229,7 @@ Connect the GPIO Block (*S_AXI*) to the SmartConnect Block (*M02_AXI*). Use Smar
 
 
 
-## Add GPIO Output for a Controllable LED
+## Add BRAM for Basic Memory Testing
 
 In the Diagram editor window, click **Add IP** and search for `axi bram`. Double-click **AXI BRAM Controller**. [BRAM](https://docs.xilinx.com/v/u/en-US/pg078-axi-bram-ctrl) is FPGA Fabric Memory and is useful here as a functionality check.
 
@@ -307,7 +307,7 @@ Add Memory Configuration constraints for the bitstream file.
 
 ![Bitstream Memory Configuration Constraints](img/Memory_Configuration_Constraints.png)
 
-Note all the external signal ports in the Block diagram. Read left-to-right. Left side has system inputs. Right side has system outputs and bidirectional IO.
+Note all the external signal ports in the Block diagram. Left side has system inputs and signals that control your design. Right side has system outputs and bidirectional IO controlled by your design.
 
 ![Block Diagram External Signals](img/Block_Diagram_External_Signals.png)
 
@@ -315,13 +315,15 @@ Add PCIe constraints. Rename signals to match the Block design names if necessar
 
 ![PCIe Constraints](img/PCIe_Constraints.png)
 
-Add GPIO and LED constraints. The Innova-2 has two LEDs. One is connected to a prescaled clock and the other to a GPIO Block for user control over XDMA.
+Add GPIO and LED constraints. The Innova-2 has two LEDs.
 
 ![LED Constraints Match Signal Names](img/GPIO_Constraints_Match_Signal_Names.png)
 
 Add DDR4 constraints.
 
 ![DDR4 Constraints](img/DDR4_Constraints.png)
+
+The Vivado GUI can also be used for [Pin Assignment](https://docs.xilinx.com/r/en-US/ug899-vivado-io-clock-planning/I/O-Logic-and-Low-Speed-I/O-Planning%E2%80%8C) and [Configuration Memory Setup](https://docs.xilinx.com/r/en-US/ug908-vivado-programming-debugging/Changing-Device-Image-Properties).
 
 
 
