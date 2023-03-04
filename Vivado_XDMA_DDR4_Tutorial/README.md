@@ -163,9 +163,13 @@ Connect the Counter Output (*Q[27:0]*) to Slice Input (*Din[27:0]*). Note the wi
 
 ![Connect Counter to Slice](img/Connect_Counter_to_Slice.png)
 
-Right-click on the Slice *Dout[0:0]* output and choose **Make External**. This will create an external port for the blinking XDMA Status LED.
+Right-click on the Slice *Dout[0:0]* output and choose **Make External**.
 
-![](img/Slice_Dout_Make_External.png)
+![Slice Dout Output Make External](img/Slice_Output_Make_External.png)
+
+This will create an external port for the blinking XDMA Status LED.
+ 
+![Slice Dout External Signal](img/Slice_Dout_Make_External.png)
 
 
 
@@ -219,9 +223,13 @@ Customize the GPIO for *All Outputs* with a *GPIO Width* of **1**. Set the *Defa
 
 ![Customize GPIO for Output](img/Customize_GPIO_Output.png)
 
-Right-click on *GPIO* and choose *Make External*. Vivado should generate a *GPIO_0* port.
+Right-click on *GPIO* and choose *Make External*.
 
-![Make GPIO Output External](img/Make_GPIO_Output_External.png)
+![Make GPIO Output External](img/GPIO_Make_External.png)
+
+Vivado should generate a *GPIO_0* port.
+ 
+![GPIO_0 External Signal](img/Make_GPIO_Output_External.png)
 
 Connect the GPIO Block (*S_AXI*) to the SmartConnect Block (*M02_AXI*). Use SmartConnect *aclk1* for *axi_aclk* and SmartConnect *aresetn* for *axi_aresetn*.
 
@@ -326,6 +334,21 @@ Add DDR4 constraints.
 The Vivado GUI can also be used for [Pin Assignment](https://docs.xilinx.com/r/en-US/ug899-vivado-io-clock-planning/I/O-Logic-and-Low-Speed-I/O-Planning%E2%80%8C) and [Configuration Memory Setup](https://docs.xilinx.com/r/en-US/ug908-vivado-programming-debugging/Changing-Device-Image-Properties).
 
 
+### Using the GUI to define Signal-to-Pin Constraints
+
+*Open Implemented Design* in the Flow Navigator.
+
+![Open Implemented Design](img/Open_Implemented_Design.png)
+
+Open the *IO Ports* tab, expand the signal hierarchy and choose pins for the various signals.
+
+![IO Ports Tab](img/IO_Ports.png)
+
+When you are finished assigning pins to signals, *File->Constraints->Save*.
+
+![Save Constraints](img/Save_Constraints.png)
+
+
 
 ## Create HDL Wrapper
 
@@ -349,4 +372,77 @@ Click *Generate Bitstream* which will Synthesize and Implement the Block design.
 
 ![Generate Bitstream for Synthesis and Implementation](img/Generate_Bitstream_Synthesis_Implementation.png)
 
+After the Bitstream is successfully generated, Write the Configutation Memory File.
+
+![Write Configuration Memory File](img/Write_Configuration_Memory_File.png)
+
+Select the `mt25qu512-spi-x1_x2_x4_x8` as the Memory Part.
+
+![Select Configuration Memory Part](img/Select_Configuration_Memory_Part.png)
+
+
+
+## Generate Project TCL Script
+
+A Project TCL Script can be used to regenerate a project in Vivado and is useful for version control and distribution of projects.
+
+After generating and testing a bitstream, [File->Project->Write TCL](https://docs.xilinx.com/r/en-US/ug892-vivado-design-flows-overview/Creating-a-Tcl-Script-to-Recreate-the-Project).
+
+![Write Project TCL Script](img/Write_Project_to_TCL.png)
+
+
+### Simplify Path for constraints.xdc in Project TCL
+
+Open the Project TCL File for editing and search for `constraints.xdc`.
+
+![Project TCL constraints.xdc ](img/Simplify_Path_for_Constraints_XDC_1.png)
+
+Shorten the path to `$origin_dir/constraints.xdc` at the start of the file.
+
+![Simplify Path for Constraints.xdc in Project TCL](img/Simplify_Path_for_Constraints_XDC_2.png)
+
+Search for the next instance of `constraints.xdc`.
+
+![Simplify Path for Constraints.xdc in Project TCL](img/Simplify_Path_for_Constraints_XDC_3.png)
+
+Shorten the path appropriately near the middle of the file.
+
+![Simplify Path for Constraints.xdc in Project TCL](img/Simplify_Path_for_Constraints_XDC_4.png)
+
+Copy the `constraints.xdc` file to the same directory as the Project TCL file.
+
+![Project Files](img/Project_Files.png)
+
+
+
+## Confirm Project TCL Script Works
+
+Test your Project's TCL Script by `source`ing it in the Vivado [Tcl Console](https://docs.xilinx.com/r/2021.1-English/ug893-vivado-ide/Using-the-Tcl-Console).
+
+![Source a Vivado TCL Project Script](img/Vivado_Source_Project_TCL.png)
+
+
+
+
+# Porting the Design to Another FPGA
+
+Under *Tools->Settings*, change the **Project Device**.
+
+![Change Project Device](img/Change_Project_Device.png)
+
+The project's IP will now be out-of-date. Run *Report IP Status*.
+
+![Status of Project IP](img/Report_IP_Status_to_Convert_to_New_Device.png)
+
+Select all the IP check boxes and run *Upgrade Selected*.
+
+![Upgrade IP](img/Show_IP_Status_then_Upgrade_Selected.png)
+
+The IP should upgrade successfully if it is not too different an FPGA. Note that constraints will also need to be updated if the package has changed.
+
+![IP Successfully Upgraded](img/IP_Successfully_Upgraded.png)
+
+Rerun *IP Status* to confirm everything has upgraded.
+
+![Rerun IP Status](img/Rerun_IP_Status.png)
 
