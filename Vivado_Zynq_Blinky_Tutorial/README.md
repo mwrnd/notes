@@ -1,6 +1,6 @@
-** Work-In-Progress **
+**Work-In-Progress**
 
-The Xilinx [Kria](https://www.xilinx.com/products/som/kria.html) [KV260](https://www.xilinx.com/products/som/kria/kv260-vision-starter-kit.html) is based on the [XCK26](https://www.xilinx.com/products/silicon-devices/soc/zynq-ultrascale-mpsoc.html#eg) ([rebranded XCZU5EV-SFVC784-2LV-C](https://en.wikipedia.org/w/index.php?title=List_of_Xilinx_FPGAs&oldid=1129244401#Alveo_and_Kria)).
+The Xilinx [Kria](https://www.xilinx.com/products/som/kria.html) [KV260](https://www.xilinx.com/products/som/kria/kv260-vision-starter-kit.html) is based on the [XCK26](https://www.xilinx.com/products/silicon-devices/soc/zynq-ultrascale-mpsoc.html#ev) ([rebranded XCZU5EV-SFVC784-2LV-C](https://en.wikipedia.org/w/index.php?title=List_of_Xilinx_FPGAs&oldid=1129244401#Alveo_and_Kria)).
 
 This tutorial is for a simple Blinking LED PL (Programmable Logic) project with minimal PS (Processing System) functionality.
 
@@ -20,7 +20,7 @@ For the [PMOD](https://digilent.com/reference/pmod/start) Connector, HDA11(H12) 
 ### Add Zynq MPSoC
 
 
-Add the [Zynq MPSoC IP](https://www.xilinx.com/content/dam/xilinx/support/documents/ip_documentation/zynq_ultra_ps_e/v3_4/pg201-zynq-ultrascale-plus-processing-system.pdf) to the Block Design. Refer to the [Embedded Design Tutorial](https://xilinx.github.io/Embedded-Design-Tutorials/docs/2021.1/build/html/docs/Introduction/ZynqMPSoC-EDT/3-system-configuration.html)
+Add the [Zynq MPSoC IP](https://www.xilinx.com/content/dam/xilinx/support/documents/ip_documentation/zynq_ultra_ps_e/v3_4/pg201-zynq-ultrascale-plus-processing-system.pdf) to the Block Design. Refer to the [Embedded Design Tutorial](https://xilinx.github.io/Embedded-Design-Tutorials/docs/2021.1/build/html/docs/Introduction/ZynqMPSoC-EDT/3-system-configuration.html).
 
 ![Add Zynq MPSoC IP in Block Design](img/Block_Design_Add_IP_Zynq_MPSoC.png)
 
