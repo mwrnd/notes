@@ -79,7 +79,7 @@ This design will require 1 **S**lave interface, 4 **M**aster interfaces, 2 clock
 
 ![Customize AXI SmartConnect](img/Customize_SmartConnect.png)
 
-Connect the XDMA and AXI SmartConnect blocks in the Diagram Editor. **M_AXI** to **S00_AXI**, **axi_clk** to **aclk**, and **axi_aresetn** to **aresetn**.
+Connect the XDMA and AXI SmartConnect blocks in the Diagram Editor. **M_AXI** to **S00_AXI** and **axi_clk** to **aclk**.
 
 ![Connect XDMA and AXI SmartConnect](img/Connect_XDMA_and_AXI_SmartConnect.png)
 
@@ -107,15 +107,15 @@ Select all the ports for automatic connection.
 
 ![Select All for Automation](img/DDR4_Run_Connection_Automation_Customize.png)
 
-This will generate a [*Processor System Reset*](https://docs.xilinx.com/v/u/en-US/pg164-proc-sys-reset) Block that controls the Active-Low Asynchronous Reset (*aresetn*) for the design. Connect *peripheral_aresetn[0:0]* to *c0_ddr4_aresetn* and AXI SmartConnect *aresetn*.
+This will generate a [*Processor System Reset*](https://docs.xilinx.com/v/u/en-US/pg164-proc-sys-reset) Block that controls the Active-Low Asynchronous Reset (*aresetn*) for the design. Connect **peripheral_aresetn[0:0]** to **c0_ddr4_aresetn** and AXI SmartConnect **aresetn**. The peripheral reset and DDR4 UI Clock will be used for all the AXI blocks.
 
 ![Processor System Reset Controls aresetn](img/Processor_System_Reset_Controls_aresetn.png)
 
-Connect the DDR4 User Interface Clock (*c0_ddr4_ui_clk*) to AXI SmartConnect *aclk1*. This will be the slowest clock in the design at 100MHz.
+Connect the DDR4 User Interface Clock (**c0_ddr4_ui_clk**) to AXI SmartConnect **aclk1**. This will be the slowest clock in the design at 100MHz.
 
 ![DDR4 UI CLK is SmartConnect ACLK1](img/DDR4_UI_CLK_is_SmartConnect_ACLK1.png)
 
-Block automation generated a System Reset (*sys_rst*) for the DDR4 Block but the Innova-2 does not have such a signal.
+Block automation generated *reset_rtl_0_0* for System Reset (*sys_rst*) for the DDR4 Block but the Innova-2 does not have such a signal.
 
 ![DDR4 sys rst](img/DDR4_sys_rst.png)
 
@@ -231,7 +231,7 @@ Vivado should generate a *GPIO_0* port.
  
 ![GPIO_0 External Signal](img/Make_GPIO_Output_External.png)
 
-Connect the GPIO Block (*S_AXI*) to the SmartConnect Block (*M02_AXI*). Use SmartConnect *aclk1* for *axi_aclk* and SmartConnect *aresetn* for *axi_aresetn*.
+Connect the GPIO Block (*S_AXI*) to the SmartConnect Block (*M02_AXI*). Use SmartConnect *aclk1* for *axi_aclk* and SmartConnect *aresetn* for *axi_aresetn*. The picture below is wrong, use **aclk1**!.
 
 ![Connect GPIO Output to SmartConnect](img/Connect_GPIO_Output_to_SmartConnect.png)
 
@@ -372,11 +372,11 @@ Click *Generate Bitstream* which will Synthesize and Implement the Block design.
 
 ![Generate Bitstream for Synthesis and Implementation](img/Generate_Bitstream_Synthesis_Implementation.png)
 
-After the Bitstream is successfully generated, Write the Configutation Memory File.
+After the Bitstream is successfully generated, *Write Configutation Memory File*. Select *bin*, *mt25qu512_x1_x2_x4_x8*, *SPIx8*, *Load bitstream files*, and a location and name for the output binary files. The bitstream will end up, for example, in the `DESIGN_NAME/DESIGN_NAME.runs/impl_1` subdirectory as `SOMETHING.bit`. Vivado will add the `_primary.bin` and `_secondary.bin` extensions as the Innova-2 uses dual MT25QU512 FLASH ICs in x8 for high speed programming.
 
 ![Write Configuration Memory File](img/Write_Configuration_Memory_File.png)
 
-Select the `mt25qu512-spi-x1_x2_x4_x8` as the Memory Part.
+Select the `mt25qu512-spi-x1_x2_x4_x8` as the *Memory Part*.
 
 ![Select Configuration Memory Part](img/Select_Configuration_Memory_Part.png)
 
@@ -445,4 +445,3 @@ The IP should upgrade successfully if it is not too different an FPGA. Note that
 Rerun *IP Status* to confirm everything has upgraded.
 
 ![Rerun IP Status](img/Rerun_IP_Status.png)
-
