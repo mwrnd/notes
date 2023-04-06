@@ -40,7 +40,7 @@ Xilinx's [Zynq Ultrascale+ BSDL Files](https://www.xilinx.com/member/forms/downl
 
 ### Add XCZU19EG FFVC1760 JTAG Bit Definitions to UrJTAG
 
-From the directory containing the `.jtag` files run the following commands which create *PART* and *STEPPINGS* files for the XCZU19EG. These commands assume UrJTAG installed support files to the default `/usr/local/share/` directory. Values were found by running the UrJTAG `detect` command which reads the `Device Id` from the JTAG chain. First 4 bits (`0001`) are the *STEPPING*, next 16 bits (`0100101001010110`) are the *PART*, last 12 bits (`000010010011`) are the *MANUFACTURER*.
+From the directory containing the `.jtag` files run the following commands which create *PART* and *STEPPINGS* files for the XCZU19EG. These commands assume UrJTAG installed support files to the default `/usr/local/share/` directory. Values were found by running the UrJTAG `detect` command which reads the `Device Id` from the JTAG chain. First 4 bits (`0001`) are the *STEPPING*, next 16 bits (`0100011101011000`) are the *PART*, last 12 bits (`01000111011`) are the *MANUFACTURER*.
 ```Shell
 sudo su
 echo "# Zynq Ultrascale+ (XCZUxxEG)" >>/usr/local/share/urjtag/xilinx/PARTS
@@ -81,7 +81,7 @@ In `xsdb` run `connect`, wait a minute, then run `targets` until the Zynq shows 
 
 ![xsdb Updates Platform Cable II Firmware](img/xsdb_connect_updates_Platform_Cable_II_Firmware.png)
 
-`lsusb` should now show `03fd:0008 Xilinx, Inc. Platform Cable USB II`. The JTAG adapter is now ready to be used by UrJTAG.
+`lsusb` should show `03fd:0008 Xilinx, Inc. Platform Cable USB II`. The JTAG adapter is now ready to be used by UrJTAG.
 
 ![03fd 0008 Xilinx Inc Platform Cable USB II](img/Xilinx_Platform_USB_Cable_II_lsusb_After_Update.png)
 
@@ -116,7 +116,7 @@ It is more useful to read individual signals:
 
 `get signal PS_MODE3` displays the value of pin PS_MODE3(AB28)
 
-The above MODE pins define Quad-SPI as the Boot Mode. See ug1085.
+The above MODE pins define Quad-SPI as the [Boot Mode](https://docs.xilinx.com/r/en-US/ug1085-zynq-ultrascale-trm/Boot-Modes).
 
 `get signal PS_ERROR_OUT` indicates a Power, Hardware, or PMU Exception when =1.
 

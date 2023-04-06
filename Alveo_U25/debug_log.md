@@ -16,7 +16,7 @@ I then managed to trace the JTAG signals to the Alveo U25 Debug Connector throug
 
 ![JTAG Connection Tracing](img/U25_JTAG_Connection_Tracing.jpg)
 
-I traced **PS_PROG_B** and **PS_INIT_B** signals. Also, PS_ERROR_OUT(EO) connects through a [LSF0102](https://www.ti.com/product/LSF0102)([RV Part Marking](https://www.ti.com/packaging/en/docs/partlookup.tsp?partmarking=RV)) voltage translator to the ATSAMD20J16 Pin3.
+I traced **PS_PROG_B** and **PS_INIT_B** signals. Also, PS_ERROR_OUT(EO) connects through a [LSF0102](https://www.ti.com/product/LSF0102)([RV Part Marking](https://www.ti.com/packaging/en/docs/partlookup.tsp?partmarking=RV)) voltage translator to the [ATSAMD20J16](https://www.microchip.com/en-us/product/ATSAMD20J16)(Pin3) which acts as a Board Management Controller.
 
 ![Debug Connector PS_PROG_B and PS_INIT_B](img/U25_PS_PROG_B_and_PS_INIT_B_connect_to_Debug_Connector.jpg)
 
@@ -74,18 +74,21 @@ For the LEDs, D1 (PWR GOOD) is lit Green, D2 is off, D3 (DONE) is off, D4 is lit
 ![LED States](img/U25_LEDs_D4-green_D5-redgreen_D6-redblue.jpg)
 
 Measured reset and config voltages when powered:
-`PS_DONE` (DN) = 0V
-`PS_ERROR_OUT` (EO) = 1.8V
-`PS_ERROR_STATUS` (ES) = 0V
-`PS_INIT_B` (IN) = 0V
-`PS_POR_B` (PR) = 1.8V
-`PS_PROG_B` (PG) = 1.8V
-`PS_REF_CLK` (RC) = 0.85V
-`PS_SRST_B` (SR) = 1.8V
-`POR_OVERRIDE` (13) = 0.72V==VCCINT
-`PUDC_B` (15) = 1.8V
 
-`POR_OVERRIDE_B` and `PUDC_B` needed to be traced.
+| Pad                   | Operating Voltage  |
+| --------------------- |:------------------:|
+|`PS_DONE` (DN)         | 0.0V               |
+|`PS_ERROR_OUT` (EO)    | 1.8V               |
+|`PS_ERROR_STATUS` (ES) | 0.0V               |
+|`PS_INIT_B` (IN)       | 0.0V               |
+|`PS_POR_B` (PR)        | 1.8V               |
+|`PS_PROG_B` (PG)       | 1.8V               |
+|`PS_REF_CLK` (RC)      | 0.85V              |
+|`PS_SRST_B` (SR)       | 1.8V               |
+|`POR_OVERRIDE` (13)    | 0.72V==VCCINT      |
+|`PUDC_B` (15)          | 1.8V               |
+
+`POR_OVERRIDE_B` and `PUDC_B` needed to be traced as well:
 
 ![POR_OVERRIDE_B and PUDC_B Annotated](img/U25_Annotated_Pins_POR_OVERRIDE_B_and_PUDC_B.jpg)
 
@@ -105,7 +108,7 @@ Start a Connection, `Open Target -> Auto Connect`
 
 ![Hardware Manager Auto Connect](img/U25_Configuration_Memory_Step0-Hardware_Manager_AutoConnect.png)
 
-A *xczu19_0 PL Power Status OFF, cannot connect PL TAP. Check POR_B signal* error shows up when you connect via JTAG.
+A *"xczu19_0 PL Power Status OFF, cannot connect PL TAP. Check POR_B signal"* error shows up when you connect via JTAG.
 
 ![POR_B Error](img/U25_Hardware_Manager_POR_B_Error.png)
 
@@ -117,7 +120,7 @@ Select `mt25qu01g-qspi-x4-single`.
 
 ![Select mt25qu01g-qspi-x4-single](img/U25_Configuration_Memory_Step2-Choose_Device.png)
 
-Right click on the `mt25qu01g-qspi-x4-single` and then Program Configuration Memory Device.
+Right click on the `mt25qu01g-qspi-x4-single` and then `Program Configuration Memory Device ...`
 
 ![Program Complete Memory Image](img/U25_Configuration_Memory_Step3-Program.png)
 
@@ -137,7 +140,7 @@ Close Target to disconnect Vivado Hardware Manager from the JTAG Adapter.
 
 ### xsdb JTAG Access to Zynq
 
-The above attempt to program the Configuration Memory Device should have left the Zynq in a state will now allow `xsdb` access.
+The above attempt to program the Configuration Memory Device should have left the Zynq in a state that will now allow `xsdb` access.
 
 Run Xilinx's `xsdb` which comes with Vivado:
 ```
@@ -147,11 +150,11 @@ xsdb
 
 In `xsdb` run `connect`, then `targets`. If things went well, the **APU** should be in the **Power On Reset** state and the first Cortex-A53 should be in the **Reset Catch, EL3(S)/A64** state.
 
-Select the first Cortex-A53 core for communication with `target 9`. `rrd pc` reads the Program Counter Register. All registers can be read with `rrd`. The command `mrd 0xFFD80528 1` reads the `PMU_GLOBAL.CSU_BR_ERR` register which contains the BootROM Error Codes.
+Select the first Cortex-A53 core for communication with `target 9`. `rrd pc` reads the Program Counter Register. Registers can be read all at once with `rrd`. The command `mrd 0xFFD80528 1` reads the `PMU_GLOBAL.CSU_BR_ERR` register which contains the BootROM Error Codes.
 
 ![xsdb Zynq Communication](img/U25_JTAG_xsdb_Zynq_Communication.png)
 
-The value `80002424` pictured means the current and previous error code was `0x24` which indicates a fault in the QSPI Configuration Memory device.
+The value `80002424` pictured means the current and previous [Error Code](https://docs.xilinx.com/r/en-US/ug1085-zynq-ultrascale-trm/CSU-BootROM-Error-Codes) was `0x24` which indicates a fault in the QSPI Configuration Memory device.
 
 ![BootROM Error Codes](img/Zynq_BootROM_Error_Codes.png)
 
@@ -179,11 +182,11 @@ PMU Register addresses are defined in `/tools/Xilinx/Vitis/2021.2/data/embeddeds
 
 **TODO**
 
-[U25 X2 NIC Driver(https://support.lenovo.com/us/en/downloads/ds547997-xilinx-u25-x2-nic-driver-for-unknown-os)] ([4.15.10.1003](https://download.lenovo.com/servers/mig/2020/12/23/43129/xlnx-lnvgy_dd_nic_u25-4.15.10.1003_linux_x86-64.tgz))
+[U25 X2 NIC Driver](https://support.lenovo.com/us/en/downloads/ds547997-xilinx-u25-x2-nic-driver-for-unknown-os) ([4.15.10.1003](https://download.lenovo.com/servers/mig/2020/12/23/43129/xlnx-lnvgy_dd_nic_u25-4.15.10.1003_linux_x86-64.tgz))
 
-[U25 X2 NIC Firmware(https://support.lenovo.com/us/en/downloads/ds548057-xilinx-u25-x2-nic-firmware-for-unknown-os)] ([8.1.3.1011-1](https://download.lenovo.com/servers/mig/2021/01/06/43174/xlnx-lnvgy_fw_nic_u25-8.1.3.1011-1_linux_x86-64.tgz))
+[U25 X2 NIC Firmware](https://support.lenovo.com/us/en/downloads/ds548057-xilinx-u25-x2-nic-firmware-for-unknown-os) ([8.1.3.1011-1](https://download.lenovo.com/servers/mig/2021/01/06/43174/xlnx-lnvgy_fw_nic_u25-8.1.3.1011-1_linux_x86-64.tgz))
 
-[U25 FPGA Utility(https://support.lenovo.com/us/en/downloads/ds547996-xilinx-u25-fpga-utility-for-unknown-os)] ([2.8.372](https://download.lenovo.com/servers/mig/2020/12/23/43128/xlnx-lnvgy_utl_nic_u25-2.8.372_linux_x86-64.tgz))
+[U25 FPGA Utility](https://support.lenovo.com/us/en/downloads/ds547996-xilinx-u25-fpga-utility-for-unknown-os)([2.8.372](https://download.lenovo.com/servers/mig/2020/12/23/43128/xlnx-lnvgy_utl_nic_u25-2.8.372_linux_x86-64.tgz))
 
 
 
