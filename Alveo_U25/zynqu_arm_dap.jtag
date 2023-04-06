@@ -1,0 +1,15 @@
+signal GND
+signal TMS
+signal TDO
+signal TDI
+signal TCK
+instruction length 4
+register DIR 32
+register BSR 1
+register BYPASS 1
+instruction PRELOAD 0001 BSR
+instruction SAMPLE/PRELOAD 0001 BSR
+instruction EXTEST 0000 BSR
+instruction BYPASS 1111 BYPASS
+instruction IDCODE 1110 DIR
+bit 0 O 0 *
