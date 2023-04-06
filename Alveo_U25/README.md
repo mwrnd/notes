@@ -14,9 +14,6 @@ The [Alveo U25](https://www.xilinx.com/content/dam/xilinx/publications/product-b
 
 [UrJTAG](http://urjtag.org) is a low-level tool for communicating with JTAG devices. It supports [Xilinx Platform Cable USB II](https://docs.xilinx.com/v/u/en-US/ds593) adapters and [clones](https://www.waveshare.com/platform-cable-usb.htm). Main use is *EXTEST* pin toggling although it is theoretically possible to program the FPGA using an [SVF file generated from the Vivado Tcl Console](https://docs.xilinx.com/r/2021.2-English/ug908-vivado-programming-debugging/Using-the-Command-Line?tocId=L2PEfMkFFNtSZI~r7QbNVg).
 
-Connect the Alveo U25 to a JTAG Programmer.
-
-![JTAG Connected](img/AlveoU25_JTAG_Connected.jpg)
 
 
 ### Compile and Install UrJTAG
@@ -67,7 +64,11 @@ exit
 
 #### Connect JTAG Adapter and Allow Vivado to Update Platform Cable USB II Firmware
 
-Connect your JTAG Adapter to the Alveo U25. If you are using a Platform Cable USB II compatible adapter it will show up under `lsusb` as `03fd:0013 Xilinx, Inc.` In this state it _CANNOT_ be used for JTAG.
+Connect your JTAG Adapter to the Alveo U25.
+
+![JTAG Connected](img/AlveoU25_JTAG_Connected.jpg)
+
+If you are using a Platform Cable USB II compatible adapter it will show up under `lsusb` as `03fd:0013 Xilinx, Inc.` In this state it _CANNOT_ be used for JTAG.
 
 ![03fd 0013 Xilinx Inc](img/Xilinx_Platform_USB_Cable_II_lsusb_Initial.png)
 
