@@ -95,6 +95,15 @@ Measured reset and config voltages when powered:
 
 
 
+## Attempt to Trace QSPI Signals
+
+I tried tracing the QSPI signals to determine if they can be accessed on the PCB but unfortunately they seem to be routed using buried vias.
+
+![Alveo U25 QSPI Signals NOT Exposed on PCB](img/U25_QSPI_Pin_Annotation_Attempt.jpg)
+
+
+
+
 ## JTAG Access to the Zynq APU
 
 
