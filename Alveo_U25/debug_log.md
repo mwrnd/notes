@@ -123,7 +123,7 @@ The UART module reads garbage from both A8 and A9.
 00000040: 0d69 2920 c2db 80c2 3806 49d3 0640 86d7  .i) ....8.I..@..
 ```
 
-![U25 Debug Connector A8 A9 Oscilloscope](img/U25_Debug_Connector_A8_A9_Oscilloscope.jpg
+![U25 Debug Connector A8 A9 Oscilloscope](img/U25_Debug_Connector_A8_A9_Oscilloscope.jpg)
 
 
 
