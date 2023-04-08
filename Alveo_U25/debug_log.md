@@ -38,14 +38,14 @@ Note that the JTAG pins run through a voltage translating buffer and operate at 
 | A3   |  `TDI`        |  3.3V              |
 | A4   |  `TMS`        |  3.3V              |
 | A5   |  `TDO`        |  3.3V              |
-| A6   |  `Vcc`        |  3.3V              |
+| A6   |  `3.3V`       |  3.3V              |
 | A7   |  `GND`        |    0V              |
 | A8   |  `???`        |  1.8V              |
 | A9   |  `???`        |  1.8V              |
-| A10  |  `???`        |  3.3V              |
-| A11  |  `???`        |  3.3V              |
-| A12  |  `???`        |  3.3V              |
-| A13  |  `???`        |  1.8V              |
+| A10  |  `SDA`        |  3.3V              |
+| A11  |  `SCL`        |  3.3V              |
+| A12  |  `nALERT`     |  3.3V              |
+| A13  |  `1.8V`       |  1.8V              |
 | B1   |  `GND`        |    0V              |
 | B2   |  `PS_POR_B`   |  1.8V              |
 | B3   |  `PS_INIT_B`  |  0.1V              |
@@ -91,6 +91,39 @@ Measured reset and config voltages when powered:
 `POR_OVERRIDE_B` and `PUDC_B` needed to be traced as well:
 
 ![POR_OVERRIDE_B and PUDC_B Annotated](img/U25_Annotated_Pins_POR_OVERRIDE_B_and_PUDC_B.jpg)
+
+
+
+
+## Tracing I2C Signals
+
+I was able to trace the Debug Connector Signals A10, A11, and A12 to SDA, SCL, and nALERT, respectively. They operate at 3.3V. The SCL line has a 4.7k-ohm resistor in series to the [TMP411](https://www.ti.com/product/TMP411) temperature sensor SCL pins.
+
+![U25 Debug Connector I2C](img/U25_Debug_Connector_A10_A11_A12-I2C.jpg)
+
+
+
+
+## Attempt to Trace A8 A9 Debug Connector Signals
+
+The pins measure 1.8V. The [U25N Notes](https://xilinx.github.io/U25N-SmartNIC-Solution/docs/build/html/docs/ug1534-shellprogramming.html) mention a UART.
+
+I used a [CH341A](https://github.com/stahir/CH341-Store/tree/5b4fda3add3d492f14f73a8376c580644f6c8195) USB-UART module set to TTL Mode (Pins 2-3 connected) and a 1.8V Adapter.
+
+![Testing 1.8V UART](img/U25_Testing_UART-Debug_Connector_A8_A9.jpg)
+
+![1.8V Adapter](img/1.8V_Adapter.jpg)
+
+The UART module reads garbage from both A8 and A9.
+```
+00000000: 9589 49c2 4c46 b292 9b93 c144 981e 0c90  ..I.LF.....D....
+00000010: 6674 0020 c61c 704e cc8c 0818 30c2 8688  ft. ..pN....0...
+00000020: dce6 8c22 8492 a5a9 a8a0 2909 55a9 a951  ..."......).U..Q
+00000030: 4b41 1291 643b 0328 02ac ab4f 1149 48c3  KA..d;.(...O.IH.
+00000040: 0d69 2920 c2db 80c2 3806 49d3 0640 86d7  .i) ....8.I..@..
+```
+
+![U25 Debug Connector A8 A9 Oscilloscope](img/U25_Debug_Connector_A8_A9_Oscilloscope.jpg
 
 
 
