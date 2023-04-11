@@ -53,12 +53,12 @@ Note that the JTAG pins run through a voltage translating buffer and operate at 
 | B5   |  `???`        |  0.6V              |
 | B6   |  `???`        |  0.6V              |
 | B7   |  `GND`        |    0V              |
-| B8   |  `???`        |  3.4V (0V-3.4V-0V) |
+| B8   |  `PWR_X2`     |  3.4V (0V-3.4V-0V) |
 | B9   |  `???`        |  3.3V              |
 | B10  |  `???`        |  1.2V              |
 | B11  |  `???`        |  2.5V              |
 | B12  |  `???`        |  1.2V              |
-| B13  |  `???`        |  0.9V              |
+| B13  |  `MGTAVCC`    |  0.9V              |
 
 
 
@@ -97,9 +97,41 @@ Measured reset and config voltages when powered:
 
 ## Tracing I2C Signals
 
-I was able to trace the Debug Connector Signals A10, A11, and A12 to SDA, SCL, and nALERT, respectively. They operate at 3.3V. The SCL line has a 4.7k-ohm resistor in series to the [TMP411](https://www.ti.com/product/TMP411) temperature sensor SCL pins.
+I was able to trace the Debug Connector Signals A10, A11, and A12 to SDA, SCL, and nALERT, respectively. They operate at 3.3V. The SCL line has a 4.7k-ohm resistor in series to the [TMP411](https://www.ti.com/product/TMP411) temperature sensor SCL pin.
 
 ![U25 Debug Connector I2C](img/U25_Debug_Connector_A10_A11_A12-I2C.jpg)
+
+
+
+
+## Tracing Debug Connector B8
+
+B8 measures 3.4V and connects to the `IN` pin of an [AP2182A](https://www.diodes.com/assets/Datasheets/AP2182A_92A.pdf) 1.5A dual channel current-limited power switch. The AP2182A's output appears to power the SFC9250 (Solarflare X2) GbE controller.
+
+![B8 Connects to AP2182A IN](img/U25_Debug_B8_Connects_to_AP2182A_IN.jpg)
+
+The 3.4V rail power cycles every so often.
+
+![B8 Power Cycles](img/U25_Debug_B8_Power_Cycles.jpg)
+
+
+
+
+## Tracing Debug Connector B13
+
+B13 seems to connect to the `MGTAVCC` voltage rail which is used by the FPGA PL (Programmable Logic) SERDES.
+
+![B13 Connects to MGTAVCC](img/U25_Debug_B13_Connects_to_MGTAVCC.jpg)
+
+
+
+
+## Attempt to Trace B9 Debug Connector Signal
+
+
+B9 measure 3.3V and 1k-ohm to the 3.3V rail. It goes to a DFN-6 component labeled `U2`, which has a signal that goes to a [NC7NZ34](https://www.onsemi.com/download/data-sheet/pdf/nc7nz34-d.pdf) triple signal buffer IC.
+
+![](img/U25_Debug_B9_Tracing_Attempt.jpg)
 
 
 
@@ -112,6 +144,8 @@ I used a [CH341A](https://github.com/stahir/CH341-Store/tree/5b4fda3add3d492f14f
 
 ![Testing 1.8V UART](img/U25_Testing_UART-Debug_Connector_A8_A9.jpg)
 
+A fixed-function 1.8V adapter such as one based on an [74ALVC164245](https://www.ti.com/lit/ds/symlink/sn74alvc164245.pdf) is preferred over a bidrectional voltage translator such as the [TXB0108](https://www.ti.com/lit/ds/symlink/txb0108.pdf).
+
 ![1.8V Adapter](img/1.8V_Adapter.jpg)
 
 The UART module reads garbage from both A8 and A9.
@@ -122,6 +156,8 @@ The UART module reads garbage from both A8 and A9.
 00000030: 4b41 1291 643b 0328 02ac ab4f 1149 48c3  KA..d;.(...O.IH.
 00000040: 0d69 2920 c2db 80c2 3806 49d3 0640 86d7  .i) ....8.I..@..
 ```
+
+Both A8 and A9 output a constant 1.8V when connected directly to a 1M-ohm input impedance oscilloscope. When also connected to the 1.8V adapter the lines have a voltage bias and very slow rising edges. A pull-up resistor does not help. These are not [open-drain](https://en.wikipedia.org/wiki/Open_collector#Open_drain).
 
 ![U25 Debug Connector A8 A9 Oscilloscope](img/U25_Debug_Connector_A8_A9_Oscilloscope.jpg)
 
