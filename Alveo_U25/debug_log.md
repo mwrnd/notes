@@ -144,7 +144,7 @@ I used a [CH341A](https://github.com/stahir/CH341-Store/tree/5b4fda3add3d492f14f
 
 ![Testing 1.8V UART](img/U25_Testing_UART-Debug_Connector_A8_A9.jpg)
 
-A fixed-function 1.8V adapter such as one based on an [74ALVC164245](https://www.ti.com/lit/ds/symlink/sn74alvc164245.pdf) is preferred over a bidrectional voltage translator such as the [TXB0108](https://www.ti.com/lit/ds/symlink/txb0108.pdf).
+A fixed-function 1.8V adapter such as one based on a [74ALVC164245](https://www.ti.com/lit/ds/symlink/sn74alvc164245.pdf) is preferred over a bidrectional voltage translator such as the [TXB0108](https://www.ti.com/lit/ds/symlink/txb0108.pdf).
 
 ![1.8V Adapter](img/1.8V_Adapter.jpg)
 
