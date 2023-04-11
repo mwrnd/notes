@@ -89,7 +89,9 @@ In `xsdb` run `connect`, wait a minute, then run `targets` until the Zynq shows 
 
 #### Begin a UrJTAG Session
 
-`sudo jtag` to start UrJTAG with access to USB. You should see the `jtag> ` command prompt. A [JTAG Overview](https://www.xjtag.com/about-jtag/jtag-a-technical-overview/) may be helpful before you begin.
+`sudo jtag` to start UrJTAG with access to USB. You should see the `jtag> ` command prompt. A [JTAG Overview](https://www.xjtag.com/about-jtag/jtag-a-technical-overview/) may be helpful before you begin. Note that `shift ir` and `shift dr` need to be run to change the debug target's state. Running `instruction` commands only changes UrJTAG's internal state.
+
+Valid signal names can be found in the [xczu19eg_ffvc1760.jtag](https://github.com/mwrnd/notes/blob/f52bbadc220d22232c5bf39dd608829c7e002867/Alveo_U25/xczu19eg_ffvc1760.jtag#L1054) file.
 
 `cable xpc_ext` selects the Xilinx Platform Cable II, external JTAG chain
 
@@ -132,6 +134,36 @@ The above MODE pins define Quad-SPI as the [Boot Mode](https://docs.xilinx.com/r
 `quit` exits UrJTAG
 
 ![UrJTAG Session](img/UrJTAG_Session_with_Zynq.png)
+
+
+A sequence of instructions like the following can be used to set IO pins. Be careful which signals you set. They should be wired appropriately on the board. Refer to [xczu19eg_ffvc1760.jtag](https://github.com/mwrnd/notes/blob/f52bbadc220d22232c5bf39dd608829c7e002867/Alveo_U25/xczu19eg_ffvc1760.jtag#L1054) for signal names.
+
+```
+instruction SAMPLE/PRELOAD
+shift ir
+shift dr
+get signal IO_??
+
+instruction EXTEST
+shift ir
+set signal IO_?? out 0
+shift dr
+
+instruction SAMPLE/PRELOAD
+shift ir
+shift dr
+get signal IO_??
+
+instruction EXTEST
+shift ir
+set signal IO_?? in
+shift dr
+
+instruction SAMPLE/PRELOAD
+shift ir
+shift dr
+get signal IO_??
+```
 
 
 
