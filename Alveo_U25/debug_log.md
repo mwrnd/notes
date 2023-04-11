@@ -236,7 +236,7 @@ The value `80002424` pictured means the current and previous [Error Code](https:
 
 ![BootROM Error Codes](img/Zynq_BootROM_Error_Codes.png)
 
-PMU Register addresses are defined in `/tools/Xilinx/Vitis/2021.2/data/embeddedsw/lib/sw_apps/zynqmp_pmufw/src/pmu_global.h`.
+PMU Register addresses are defined in [`/tools/Xilinx/Vitis/2021.2/data/embeddedsw/lib/sw_apps/zynqmp_pmufw/src/pmu_global.h`](https://github.com/Xilinx/embeddedsw/blob/836d748f91eda280bac23d0200df8a3bef61c0c3/lib/sw_apps/zynqmp_pmufw/src/pmu_global.h#L2306).
 ```
 #define PMU_GLOBAL_BASEADDR     ((u32)0xFFD80000U)
 #define PMU_GLOBAL_REQ_PWRUP_STATUS ((PMU_GLOBAL_BASEADDR)+((u32)0X00000110U))
