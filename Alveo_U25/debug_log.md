@@ -133,7 +133,7 @@ B13 seems to connect to the `MGTAVCC` voltage rail which is used by the FPGA PL 
 ## Attempt to Trace B9 Debug Connector Signal
 
 
-B9 measure 3.3V and 1k-ohm to the 3.3V rail. It goes to a DFN-6 component labeled `U2`, which has a signal that goes to a [NC7NZ34](https://www.onsemi.com/download/data-sheet/pdf/nc7nz34-d.pdf) triple signal buffer IC.
+B9 measures 3.3V and has 1k-ohm series resistance to the 3.3V rail. It has 100-ohm series resistance to VccB of the [SN74AUP1T34](https://www.ti.com/lit/ds/symlink/sn74aup1t34.pdf) labeled [`U2`](https://www.ti.com/packaging/en/docs/partlookup.tsp?partmarking=U2), which has a signal that goes to a [NC7NZ34](https://www.onsemi.com/download/data-sheet/pdf/nc7nz34-d.pdf) triple signal buffer IC.
 
 ![](img/U25_Debug_B9_Tracing_Attempt.jpg)
 
