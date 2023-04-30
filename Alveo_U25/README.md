@@ -80,7 +80,9 @@ xsdb
 
 In `xsdb` run `connect`, wait a minute, then run `targets` until the Zynq shows up, then `exit`.
 
-![xsdb Updates Platform Cable II Firmware](img/xsdb_connect_updates_Platform_Cable_II_Firmware.png)
+THIS DOES NOT WORK! You will need to follow the [JTAG Access to the Zynq APU](https://github.com/mwrnd/notes/blob/main/Alveo_U25/debug_log.md#jtag-access-to-the-zynq-apu) notes and attempt to program the Configuration Memory to allow JTAG access. The failed procedure enables JTAG once the Cortex-A53 is in the `Reset Catch` state.
+
+![JTAG Enabled when Cortex-A53 in Reset Catch](img/U25_JTAG_xsdb_Zynq_Communication.png)
 
 `lsusb` should now show `03fd:0008 Xilinx, Inc. Platform Cable USB II`. The JTAG adapter is ready to be used by UrJTAG.
 
