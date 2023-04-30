@@ -29,36 +29,36 @@ I created a simple DIY adapter for the U25 Debug Connector using a [MEC8](https:
 
 ### Alveo U25 Debug Connector Pinout
 
-Note that the JTAG pins run through a voltage translating buffer and operate at 3.3V while the `PS_POR_B` and `PS_INIT_B` signals have direct connections to the Zynq IC and operate at 1.8V so they cannot be driven by the same circuit as the JTAG signals. The operating voltage is the voltage measured on the pad to GND when the board is powered on.
+Note that the JTAG pins run through a voltage translating buffer and operate at 3.3V while the `PS_POR_B`, `PS_INIT_B`, `RXD`, and `TXD` signals have direct connections to the Zynq IC and operate at 1.8V so they cannot be driven by the same circuit as the JTAG signals. They require voltage translation. The Operating Voltage is the voltage measured on the pad to GND when the board is powered on.
 
-| Pad  | Signal        | Operating Voltage  |
-| ---- |:-------------:|:------------------:|
-| A1   |  `GND`        |    0V              |
-| A2   |  `TCK`        |  3.3V              |
-| A3   |  `TDI`        |  3.3V              |
-| A4   |  `TMS`        |  3.3V              |
-| A5   |  `TDO`        |  3.3V              |
-| A6   |  `3.3V`       |  3.3V              |
-| A7   |  `GND`        |    0V              |
-| A8   |  `???`        |  1.8V              |
-| A9   |  `???`        |  1.8V              |
-| A10  |  `SDA`        |  3.3V              |
-| A11  |  `SCL`        |  3.3V              |
-| A12  |  `nALERT`     |  3.3V              |
-| A13  |  `1.8V`       |  1.8V              |
-| B1   |  `GND`        |    0V              |
-| B2   |  `PS_POR_B`   |  1.8V              |
-| B3   |  `PS_INIT_B`  |  0.1V              |
-| B4   |  `???`        |  2.2V              |
-| B5   |  `???`        |  0.6V              |
-| B6   |  `???`        |  0.6V              |
-| B7   |  `GND`        |    0V              |
-| B8   |  `SFP_PWR`    |  3.4V (0V-3.4V-0V) |
-| B9   |  `???`        |  3.3V              |
-| B10  |  `???`        |  1.2V              |
-| B11  |  `???`        |  2.5V              |
-| B12  |  `???`        |  1.2V              |
-| B13  |  `MGTAVCC`    |  0.9V              |
+| Pad  | Signal         | Operating Voltage  |
+| ---- |:--------------:|:------------------:|
+| A1   | `GND`          |    0V              |
+| A2   | `TCK`          |  3.3V              |
+| A3   | `TDI`          |  3.3V              |
+| A4   | `TMS`          |  3.3V              |
+| A5   | `TDO`          |  3.3V              |
+| A6   | `3.3V`         |  3.3V              |
+| A7   | `GND`          |    0V              |
+| A8   | `RXD=PS_MIO22` |  1.8V              |
+| A9   | `TXD=PS_MIO23` |  1.8V              |
+| A10  | `SDA`          |  3.3V              |
+| A11  | `SCL`          |  3.3V              |
+| A12  | `nALERT`       |  3.3V              |
+| A13  | `1.8V`         |  1.8V              |
+| B1   | `GND`          |    0V              |
+| B2   | `PS_POR_B`     |  1.8V              |
+| B3   | `PS_INIT_B`    |  0.1V              |
+| B4   | `???`          |  2.2V              |
+| B5   | `???`          |  0.6V              |
+| B6   | `???`          |  0.6V              |
+| B7   | `GND`          |    0V              |
+| B8   | `SFP_PWR`      |  3.4V (0V-3.4V-0V) |
+| B9   | `???`          |  3.3V              |
+| B10  | `???`          |  1.2V              |
+| B11  | `???`          |  2.5V              |
+| B12  | `???`          |  1.2V              |
+| B13  | `MGTAVCC`      |  0.9V              |
 
 
 
@@ -143,6 +143,10 @@ B9 measures 3.3V and has 1k-ohm series resistance to the 3.3V rail. It has 100-o
 ## Attempt to Trace A8 A9 Debug Connector Signals
 
 The pins measure 1.8V. The [U25N Notes](https://xilinx.github.io/U25N-SmartNIC-Solution/docs/build/html/docs/ug1534-shellprogramming.html) mention a UART and [astronomy8 on the ServeTheHome Forum found A8 and A9 are being used](https://forums.servethehome.com/index.php?threads/identifying-some-curious-xilinx-solarflare-cards.35111/post-369295).
+
+After enabling JTAG using the [JTAG Access to the Zynq APU](https://github.com/mwrnd/notes/blob/main/Alveo_U25/debug_log.md#jtag-access-to-the-zynq-apu) procedure I was able to test pins A8 and A9. A8 connects to `PS_MIO22` which is **RXD** and A9 connects to `PS_MIO23` which is **TXD**.
+
+![PS_MIO22 is RXD and PS_MIO23 is TXD](img/UrJTAG_PS_MIO22_RXD__PS_MIO23_TXD.jpg)
 
 I used a [CH341A](https://github.com/stahir/CH341-Store/tree/5b4fda3add3d492f14f73a8376c580644f6c8195) USB-UART module set to TTL Mode (Pins 2-3 connected) and a 1.8V Adapter.
 
