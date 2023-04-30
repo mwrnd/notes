@@ -53,7 +53,7 @@ Note that the JTAG pins run through a voltage translating buffer and operate at 
 | B5   |  `???`        |  0.6V              |
 | B6   |  `???`        |  0.6V              |
 | B7   |  `GND`        |    0V              |
-| B8   |  `PWR_X2`     |  3.4V (0V-3.4V-0V) |
+| B8   |  `SFP_PWR`    |  3.4V (0V-3.4V-0V) |
 | B9   |  `???`        |  3.3V              |
 | B10  |  `???`        |  1.2V              |
 | B11  |  `???`        |  2.5V              |
@@ -106,9 +106,13 @@ I was able to trace the Debug Connector Signals A10, A11, and A12 to SDA, SCL, a
 
 ## Tracing Debug Connector B8
 
-B8 measures 3.4V and connects to the `IN` pin of an [AP2182A](https://www.diodes.com/assets/Datasheets/AP2182A_92A.pdf) 1.5A dual channel current-limited power switch. The AP2182A's output appears to power the SFC9250 (Solarflare X2) GbE controller.
+B8 measures 3.4V and connects to the `IN` pin of an [AP2182A](https://www.diodes.com/assets/Datasheets/AP2182A_92A.pdf) 1.5A dual channel current-limited power switch.
 
 ![B8 Connects to AP2182A IN](img/U25_Debug_B8_Connects_to_AP2182A_IN.jpg)
+
+The AP2182A's outputs power the SFP Connectors.
+
+![AP2182A U17 Powers SFP Connectors](img/AP2182A_U17_Powers_SFP_Connectors.jpg)
 
 The 3.4V rail power cycles every so often.
 
@@ -144,7 +148,7 @@ I used a [CH341A](https://github.com/stahir/CH341-Store/tree/5b4fda3add3d492f14f
 
 ![Testing 1.8V UART](img/U25_Testing_UART-Debug_Connector_A8_A9.jpg)
 
-A fixed-function 1.8V adapter such as one based on a [74ALVC164245](https://www.ti.com/lit/ds/symlink/sn74alvc164245.pdf) is preferred over a bidrectional voltage translator such as the [TXB0108](https://www.ti.com/lit/ds/symlink/txb0108.pdf).
+A fixed-function 1.8V adapter such as one based on a [74ALVC164245](https://assets.nexperia.com/documents/data-sheet/74ALVC164245.pdf) is preferred over a bidrectional voltage translator such as the [TXB0108](https://www.ti.com/lit/ds/symlink/txb0108.pdf).
 
 ![1.8V Adapter](img/1.8V_Adapter.jpg)
 
@@ -160,6 +164,32 @@ The UART module reads garbage from both A8 and A9.
 Both A8 and A9 output a constant 1.8V when connected directly to a 1M-ohm input impedance oscilloscope. When also connected to the 1.8V adapter the lines have a voltage bias and very slow rising edges. A pull-up resistor does not help. These are not [open-drain](https://en.wikipedia.org/wiki/Open_collector#Open_drain).
 
 ![U25 Debug Connector A8 A9 Oscilloscope](img/U25_Debug_Connector_A8_A9_Oscilloscope.jpg)
+
+
+
+
+## Tracing SAMD20 Board Controller Reset and Serial Wire Debug SWD
+
+The [SAMD20J16](https://www.microchip.com/en-us/product/ATSAMD20J16)'s [Serial Wire Debug SWD](https://developer.arm.com/documentation/ihi0031/a/The-Serial-Wire-Debug-Port--SW-DP-/Introduction-to-the-ARM-Serial-Wire-Debug--SWD--protocol) pins connect to the B-Side of the Auxiliary Debug Connector.
+
+| Pad  | Signal    | Operating Voltage  |
+| ---- |:---------:|:------------------:|
+| ...  |  `...`    |   ...              |
+| B1   |  `???`    |  3.3V              |
+| B2   |  `???`    |  3.3V              |
+| B3   |  `SWDIO`  |  3.3V              |
+| B4   |  `SWCLK`  |  3.3V              |
+| ...  |  `...`    |   ...              |
+
+![SAMD20 Reset and Serial Wire Debug SWD](img/U25_SAMD20_SWD_Signals.jpg)
+
+The [SOT23-3](https://en.wikipedia.org/wiki/Small-outline_transistor#SOT23-3,_SOT323,_SOT416) transistors marked `W4T` are possibly [BSH111BK](https://assets.nexperia.com/documents/data-sheet/BSH111BK.pdf) N-Channel MOSFETs. From the [PBHV8540T](hhttps://web.archive.org/web/20120512162654/http://www.nxp.com/documents/data_sheet/PBHV8540T.pdf) datasheet it appears `W` is a site code and `4T` is the part code. However, the markings [look like Diodes Incorporated markings](https://www.google.com/search?q=%22W4%22+%22Product+Marking%22+site:diodes.com).
+
+![SOT23-3 with W4T Marking is BSH111BK](img/Transistor_MOSFET_NCH_BSH111BK_SOT23-3_W4T-Marking.png)
+
+I was unable to trace the Reset line to any external connector.
+
+![SAMD20 Reset](img/U25_SAMD20_Reset.png)
 
 
 
@@ -247,6 +277,68 @@ PMU Register addresses are defined in [`/tools/Xilinx/Vitis/2021.2/data/embedded
 *Table 11-9* in the [ug1085 Zynq Technical Reference Manual](https://www.xilinx.com/content/dam/xilinx/support/documents/user_guides/ug1085-zynq-ultrascale-trm.pdf) explains the [BootROM Error Codes](https://docs.xilinx.com/r/en-US/ug1085-zynq-ultrascale-trm/CSU-BootROM-Error-Codes) for the `PMU_GLOBAL.CSU_BR_ERR` register.
 
 ![CSU BootROM Error Codes](img/Zynq_CSU_BootROM_Error_Codes.png)
+
+
+
+
+### Zynq Boot Halts on Tamper Detection
+
+During a debug attempt, `mrd 0xFFD80528 1` (the [`PMU_GLOBAL.CSU_BR_ERR` register](https://github.com/Xilinx/embeddedsw/blob/836d748f91eda280bac23d0200df8a3bef61c0c3/lib/sw_apps/zynqmp_pmufw/src/pmu_global.h#L2306)) had BootROM [Error Code](https://docs.xilinx.com/r/en-US/ug1085-zynq-ultrascale-trm/CSU-BootROM-Error-Codes) `0x92` as the previous error.
+
+![CSU Tamper Detect](img/xsdb_CSU_Tamper_Detect.png)
+
+Further exploration did not yield any additional information as the various tamper registers only store the current BootROM Error Code.
+```
+mrd 0xFFD80528 1
+mrd 0xFFCA0018 1
+mrd 0xFFCA5000 1
+mrd 0xFFCA500C 1
+```
+
+![Previous BootROM Error was 0x92](img/xsdb_Previous_BootROM_Error_was_0x92.png)
+
+
+
+
+## Debug Connector I2C Scanning
+
+I used an [Adafruit MCP2221A](https://www.trustedparts.com/en/part/adafruit/4471) breakout board and [i2c-tools](https://manpages.debian.org/unstable/i2c-tools/i2cdetect.8.en.html).
+
+```
+sudo apt-get install i2c-tools
+```
+
+![Debug Connector I2C Using MCP2221](img/U25_Debug_Connector_I2C_Using_MCP2221.jpg)
+
+On my system the MCP2221 showed up as I2C bus `5`. Use [`i2c-detect`](https://manpages.debian.org/unstable/i2c-tools/i2cdetect.8.en.html) to scan all 7-bit I2C addresses. `0x4D` and `0x4E` are the [TMP411](https://www.ti.com/product/TMP411) temperature sensors [found earlier](#tracing-i2c-signals).
+```
+lsusb | grep Microchip
+sudo i2c-detect -l | grep MCP2221
+sudo i2c-detect -r 5 0x03 0x77
+```
+
+![I2C Scan](img/U25_Debug_Connector_I2C_Scan.png)
+
+
+
+
+### I2C Bus Device Register Dumps
+
+Use `i2cdump` on all the devices that were found.
+
+![I2C Dump of 0x0C](img/U25_Debug_Connector_I2C_Dump_0x0C.png)
+
+![I2C Dump of 0x30](img/U25_Debug_Connector_I2C_Dump_0x30.png)
+
+![I2C Dump of 0x31](img/U25_Debug_Connector_I2C_Dump_0x31.png)
+
+![I2C Dump of 0x32](img/U25_Debug_Connector_I2C_Dump_0x32.png)
+
+![I2C Dump of 0x49](img/U25_Debug_Connector_I2C_Dump_0x49.png)
+
+![I2C Dump of 0x4D](img/U25_Debug_Connector_I2C_Dump_0x4D_TMP411.png)
+
+![I2C Dump of 0x4E](img/U25_Debug_Connector_I2C_Dump_0x4E_TMP411.png)
 
 
 
