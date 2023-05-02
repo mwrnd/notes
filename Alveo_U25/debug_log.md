@@ -320,7 +320,7 @@ The Reset signal is buffered into two 1.8V traces using an IC marked `A5AA`, U27
 
 ![PCIe U27 PERSTn Closeup](img/U25_PCIe_U27_PERSTn_Closeup.jpg)
 
-The clock signal can further be traced to pins AK11 and AK12. The 9th PCIe Lane, RX08, can be traced to AM7 and AM8, which are transmit pins.
+The clock signal pair can further be traced to pins AK11 and AK12. The 9th PCIe Lane, RX08, can be traced to AM7 and AM8, which are a transmit pair.
 
 ![PCIe Lane 8](img/U25_PCIe_9thRX_Lane08.jpg)
 
@@ -329,7 +329,7 @@ The clock signal can further be traced to pins AK11 and AK12. The 9th PCIe Lane,
 
 ### Using UrJTAG to find PCIe Reset Signal Pin
 
-Plug the U25 into a PCIe Extension Riser board but only connect power, no signal header.
+Plug the Alveo U25 into a PCIe Extension Riser board but only connect power, no signal header.
 
 Enable JTAG using the [JTAG Access to the Zynq APU](#jtag-access-to-the-zynq-apu) process above. Refer to the [JTAG Using UrJTAG](https://github.com/mwrnd/notes/tree/main/Alveo_U25#jtag-using-urjtag) notes for UrJTAG setup. Run `sudo jtag` in a terminal then the following commands at the `jtag>` prompt. Note `cable xpc_ext` is for a [Xilinx Platform Cable USB II](https://docs.xilinx.com/v/u/en-US/ds593) adapter or [clone](https://www.waveshare.com/platform-cable-usb.htm). The [`getallio`](getallio) script reads the status of all the `IO_` pins. A similar script is also included for `PS_MIO_` pins, [`getallpsmio`](getallpsmio).
 
@@ -367,7 +367,7 @@ Do this several times, waiting different amounts between the second call to `get
 
 ## Save a Copy of the IS25WP128 SFC9250 Firmware
 
-If you have access to a [`flashrom`](https://www.flashrom.org/Flashrom) compatible SPI Programmer (such as a [CH341A Programmer](https://github.com/stahir/CH341-Store/tree/5b4fda3add3d492f14f73a8376c580644f6c8195)) with a 1.8V Adapter, consider saving the [IS25WP128-JBLE](https://www.issi.com/WW/pdf/IS25WP032-064-128.pdf) 1.8V FLASH IC contents.  **This is a dangerous procedure that can damage your U25**. Please do not make this your first attempt at FLASH IC programming. Consider a practice run on some other less important device or [purchase a IS25WP128](https://www.trustedparts.com/en/search/IS25WP128-JBLE) IC to test with.
+If you have access to a [`flashrom`](https://www.flashrom.org/Flashrom) compatible SPI Programmer (such as a [CH341A Programmer](https://github.com/stahir/CH341-Store/tree/5b4fda3add3d492f14f73a8376c580644f6c8195)) with a 1.8V Adapter, consider saving the [IS25WP128-JBLE](https://www.issi.com/WW/pdf/IS25WP032-064-128.pdf) 1.8V FLASH IC contents.  **This is a dangerous procedure that can damage your U25**. Please do not make this your first attempt at FLASH IC programming. Consider a practice run on some other less important device or [purchase a IS25WP128](https://www.trustedparts.com/en/search/IS25WP128-JBLE) IC to test with. The U25 should **not** be powered when reading the IS25WP128.
  
 ![IS25WP128 flashrom read Using CH341A with 1.8V Adapter](img/flashrom_Read_and_Erase_Using_CH341A_with_1.8V_Adapter.jpg)
 
