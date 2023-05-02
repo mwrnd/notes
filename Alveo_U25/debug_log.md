@@ -187,7 +187,7 @@ The [SAMD20J16](https://www.microchip.com/en-us/product/ATSAMD20J16)'s [Serial W
 
 ![SAMD20 Reset and Serial Wire Debug SWD](img/U25_SAMD20_SWD_Signals.jpg)
 
-The [SOT23-3](https://en.wikipedia.org/wiki/Small-outline_transistor#SOT23-3,_SOT323,_SOT416) transistors marked `W4T` are possibly [BSH111BK](https://assets.nexperia.com/documents/data-sheet/BSH111BK.pdf) N-Channel MOSFETs. From the [PBHV8540T](hhttps://web.archive.org/web/20120512162654/http://www.nxp.com/documents/data_sheet/PBHV8540T.pdf) datasheet it appears `W` is a site code and `4T` is the part code. However, the markings [look like Diodes Incorporated markings](https://www.google.com/search?q=%22W4%22+%22Product+Marking%22+site:diodes.com).
+The [SOT23-3](https://en.wikipedia.org/wiki/Small-outline_transistor#SOT23-3,_SOT323,_SOT416) transistors marked `W4T` are possibly [BSH111BK](https://assets.nexperia.com/documents/data-sheet/BSH111BK.pdf) N-Channel MOSFETs. From the [PBHV8540T](https://web.archive.org/web/20120512162654/http://www.nxp.com/documents/data_sheet/PBHV8540T.pdf) datasheet it appears `W` is a site code and `4T` is the part code for the BSH111BK. However, the markings [look like Diodes Incorporated markings](https://www.google.com/search?q=%22W4%22+%22Product+Marking%22+site:diodes.com).
 
 ![SOT23-3 with W4T Marking is BSH111BK](img/Transistor_MOSFET_NCH_BSH111BK_SOT23-3_W4T-Marking.png)
 
@@ -300,6 +300,84 @@ mrd 0xFFCA500C 1
 ```
 
 ![Previous BootROM Error was 0x92](img/xsdb_Previous_BootROM_Error_was_0x92.png)
+
+
+
+
+## Tracing PCIe Connections
+
+The Alveo U25 has an x16 PCI Express connection that needs to be bifurcated into two x8 connections to allow both the [Solarflare SFC9250 X2 GbE Controller](https://www.xilinx.com/products/boards-and-kits/x2-series.html) and Zynq FPGA SoC to communicate with the host.
+
+The PCIe Clock and Reset signals are each buffered into two seperate signals.
+
+![PCIe Clock and Reset](img/U25_PCIe_PERST_CLK.jpg)
+
+The PCIe clock is buffered into two signal pairs using an IC marked `AOZ LG`, U18.
+
+![PCIe Clock](img/U25_PCIe_CLOCK.jpg)
+
+The Reset signal is buffered into two 1.8V traces using an IC marked `A5AA`, U27.
+
+![PCIe U27 PERSTn Closeup](img/U25_PCIe_U27_PERSTn_Closeup.jpg)
+
+The clock signal can further be traced to pins AK11 and AK12. The 9th PCIe Lane, RX08, can be traced to AM7 and AM8, which are transmit pins.
+
+![PCIe Lane 8](img/U25_PCIe_9thRX_Lane08.jpg)
+
+
+
+
+### Using UrJTAG to find PCIe Reset Signal Pin
+
+Plug the U25 into a PCIe Extension Riser board but only connect power, no signal header.
+
+Enable JTAG using the [JTAG Access to the Zynq APU](#jtag-access-to-the-zynq-apu) process above. Refer to the [JTAG Using UrJTAG](https://github.com/mwrnd/notes/tree/main/Alveo_U25#jtag-using-urjtag) notes for UrJTAG setup. Run `sudo jtag` in a terminal then the following commands at the `jtag>` prompt. Note `cable xpc_ext` is for a [Xilinx Platform Cable USB II](https://docs.xilinx.com/v/u/en-US/ds593) adapter or [clone](https://www.waveshare.com/platform-cable-usb.htm). The [`getallio`](getallio) script reads the status of all the `IO_` pins. A similar script is also included for `PS_MIO_` pins, [`getallpsmio`](getallpsmio).
+
+```
+cable xpc_ext
+detect
+print chain
+part 1
+instruction EXTEST
+shift ir
+shift dr
+dr
+script /home/user/getallio
+```
+
+Copy the output into a file.
+
+Connect the PCIe PERSTn signal, the resistor below U27, to 3.3V.
+
+![Connect PERSTn To 3.3V](img/Connect_PERSTn_To_3.3V_Before_Running_get-all-io.jpg)
+
+Run the [`getallio`](getallio) script again and copy the results to a new file.
+```
+script /home/user/getallio
+```
+
+![Run script getallio](img/UrJTAG_run_script-get-all-io.png)
+
+Do this several times, waiting different amounts between the second call to `getallio`. Pin `IO_AM25` will be the only signal that consistently changes. It must be the PCIe Reset signal.
+
+![getallio Output Diffs](img/U25_UrJTAG_script-get-all-io_output_diffs.png)
+
+
+
+
+## Save a Copy of the IS25WP128 SFC9250 Firmware
+
+If you have access to a [`flashrom`](https://www.flashrom.org/Flashrom) compatible SPI Programmer (such as a [CH341A Programmer](https://github.com/stahir/CH341-Store/tree/5b4fda3add3d492f14f73a8376c580644f6c8195)) with a 1.8V Adapter, consider saving the [IS25WP128-JBLE](https://www.issi.com/WW/pdf/IS25WP032-064-128.pdf) 1.8V FLASH IC contents.  **This is a dangerous procedure that can damage your U25**. Please do not make this your first attempt at FLASH IC programming. Consider a practice run on some other less important device or [purchase a IS25WP128](https://www.trustedparts.com/en/search/IS25WP128-JBLE) IC to test with.
+ 
+![IS25WP128 flashrom read Using CH341A with 1.8V Adapter](img/flashrom_Read_and_Erase_Using_CH341A_with_1.8V_Adapter.jpg)
+
+```
+sudo flashrom -p ch341a_spi -r u25_25f128_read1.bin
+sudo flashrom -p ch341a_spi -r u25_25f128_read2.bin
+sha256sum u25_25f128_read*
+```
+
+![IS25WP128 FLASH Read then Erase](img/U25_IS25WP128_FLASH_Read_then_Erase.jpg)
 
 
 
