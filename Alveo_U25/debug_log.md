@@ -2,6 +2,9 @@
 
 # Alveo U25 Debug Log
 
+See also the [Vitis Debug Log](debug_log_vitis.md).
+
+
 
 
 ## Figuring out the JTAG Debug Connector
