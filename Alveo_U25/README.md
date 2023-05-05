@@ -15,7 +15,6 @@ The [Alveo U25](https://www.xilinx.com/content/dam/xilinx/publications/product-b
 [UrJTAG](http://urjtag.org) is a low-level tool for communicating with JTAG devices. It supports [Xilinx Platform Cable USB II](https://docs.xilinx.com/v/u/en-US/ds593) adapters and [clones](https://www.waveshare.com/platform-cable-usb.htm). Main use is *EXTEST* pin toggling although it is theoretically possible to program the FPGA using an [SVF file generated from the Vivado Tcl Console](https://docs.xilinx.com/r/2021.2-English/ug908-vivado-programming-debugging/Using-the-Command-Line?tocId=L2PEfMkFFNtSZI~r7QbNVg).
 
 
-
 ### Compile and Install UrJTAG
 
 ```Shell
@@ -31,9 +30,11 @@ sudo make install
 sudo ldconfig
 ```
 
+
 ### Create UrJTAG-Compatible JTAG Definition Files from BSDL Files
 
 Xilinx's [Zynq Ultrascale+ BSDL Files](https://www.xilinx.com/member/forms/download/sim-model-eval-license-xef.html?filename=bsdl_zynquplus_2021_2.zip) include `STD_1149_6_2003.all` definitions that UrJTAG's `bsdl2jtag` cannot process and must therefore be removed. The included [xczu19eg_ffvc1760.jtag](xczu19eg_ffvc1760.jtag) and [zynqu_arm_dap.jtag](zynqu_arm_dap.jtag) files are processed and tested to work with UrJTAG.
+
 
 ### Add XCZU19EG FFVC1760 JTAG Bit Definitions to UrJTAG
 
@@ -62,6 +63,7 @@ exit
 
 
 
+
 #### Connect JTAG Adapter and Allow Vivado to Update Platform Cable USB II Firmware
 
 Connect your JTAG Adapter to the Alveo U25.
@@ -78,15 +80,26 @@ source /tools/Xilinx/Vivado/2021.2/settings64.sh
 xsdb
 ```
 
-In `xsdb` run `connect`, wait a minute, then run `targets` until the Zynq shows up, then `exit`.
+In `xsdb` run the following commands to bring the Zynq out of the `L2 Cache Reset` state and into the `Power On Reset` and `External Debug Request` state. The 10 second delay (`after 10000`) allows for Xilinx's `hw_server` to update the Platform Cable II Firmware in the background.
+```
+connect
+after 10000
+targets
+targets -set -nocase -filter {name =~ "*APU*"}
+mwr 0xffff0000 0x14000000
+mask_write 0xFD1A0104 0x501 0x0
+targets -set -nocase -filter {name =~ "*A53*#0"}
+stop
+targets
+```
 
-THIS DOES NOT WORK! You will need to follow the [JTAG Access to the Zynq APU](https://github.com/mwrnd/notes/blob/main/Alveo_U25/debug_log.md#jtag-access-to-the-zynq-apu) notes and attempt to program the Configuration Memory to allow JTAG access. The failed procedure enables JTAG once the Cortex-A53 is in the `Reset Catch` state.
+![JTAG Enabled when Cortex-A53 in External Debug Request](img/JTAG_xsdb_xsct_L2_Cache_Reset_to_External_Debug_Request.png)
 
-![JTAG Enabled when Cortex-A53 in Reset Catch](img/U25_JTAG_xsdb_Zynq_Communication.png)
-
-`lsusb` should now show `03fd:0008 Xilinx, Inc. Platform Cable USB II`. The JTAG adapter is ready to be used by UrJTAG.
+`exit` from `xsdb`. `lsusb` should now show `03fd:0008 Xilinx, Inc. Platform Cable USB II`. The JTAG adapter is ready to be used by UrJTAG.
 
 ![03fd 0008 Xilinx Inc Platform Cable USB II](img/Xilinx_Platform_USB_Cable_II_lsusb_After_Update.png)
+
+
 
 
 #### Begin a UrJTAG Session
@@ -137,6 +150,11 @@ The above MODE pins define Quad-SPI as the [Boot Mode](https://docs.xilinx.com/r
 
 ![UrJTAG Session](img/UrJTAG_Session_with_Zynq.png)
 
+
+The included UrJTAG scripts [`getallio`](getallio) and [`getallpsmio`](getallpsmio) will return the states of all the Programmable Logic (PL) I/O pins and Processing System (PS) Multiplexed I/O pins, respectively.
+```
+include /DOWNLOAD_DIRECTORY/getallio
+```
 
 A sequence of instructions like the following can be used to set IO pins. Be careful which signals you set. They should be wired appropriately on the board. Refer to [xczu19eg_ffvc1760.jtag](https://github.com/mwrnd/notes/blob/f52bbadc220d22232c5bf39dd608829c7e002867/Alveo_U25/xczu19eg_ffvc1760.jtag#L1054) for signal names.
 
@@ -191,6 +209,10 @@ PCIe JTAG signals are connected to somewhere on the board through a [SN74AVC4T77
 The Zynq JTAG pins have two buffer ICs connected to them.
 
 ![Multiple JTAG Sources](img/U25_Programming_Header_has_two_JTAG_Sources.jpg)
+
+[XCU25==XCZU19EG-FFVC1760](https://en.wikipedia.org/w/index.php?title=List_of_Xilinx_FPGAs&oldid=1129244401) Banks from [Zynq Ultrascale+ Device Packaging and Pinouts](https://docs.xilinx.com/v/u/en-US/ug1075-zynq-ultrascale-pkg-pinout).
+
+![XCU25 XCZU19EG FFVC1760 Banks](img/XCU25_XCZU19EG_FFVC1760_Banks_ug1075.png)
 
 
 

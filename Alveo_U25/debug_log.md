@@ -144,30 +144,27 @@ B9 measures 3.3V and has 1k-ohm series resistance to the 3.3V rail. It has 100-o
 
 The pins measure 1.8V. The [U25N Notes](https://xilinx.github.io/U25N-SmartNIC-Solution/docs/build/html/docs/ug1534-shellprogramming.html) mention a UART and [astronomy8 on the ServeTheHome Forum found A8 and A9 are being used](https://forums.servethehome.com/index.php?threads/identifying-some-curious-xilinx-solarflare-cards.35111/post-369295).
 
-After enabling JTAG using the [JTAG Access to the Zynq APU](https://github.com/mwrnd/notes/blob/main/Alveo_U25/debug_log.md#jtag-access-to-the-zynq-apu) procedure I was able to test pins A8 and A9. A8 connects to `PS_MIO22` which is **RXD** and A9 connects to `PS_MIO23` which is **TXD**.
+After [enabling JTAG](https://github.com/mwrnd/notes/tree/main/Alveo_U25#connect-jtag-adapter-and-allow-vivado-to-update-platform-cable-usb-ii-firmware) I was able to use UrJTAG to test pins A8 and A9. A8 connects to `PS_MIO22` which is **RXD** and A9 connects to `PS_MIO23` which is **TXD**.
+
+I used a [SN74AVC4T774](https://www.ti.com/product/SN74AVC4T774) Voltage Translator on a [TSSOP](https://www.ti.com/lit/pdf/mpds361a)-to-DIP adapter ([1](https://www.trustedparts.com/en/search/PA0193), [2](https://www.trustedparts.com/en/search/LCQT-TSSOP16)).
+
+![U25 UART Voltage Translator](img/U25_UART-Level-Shifter_I2C_MCP2221.jpg)
+
+[SN74AVC4T774](https://www.ti.com/lit/ds/symlink/sn74avc4t774.pdf) connections:
+
+![U25 UART Voltage Translator](img/U25_UART_MCP2221_Voltage_Translator.png)
+
+UrJTAG Session:
 
 ![PS_MIO22 is RXD and PS_MIO23 is TXD](img/UrJTAG_PS_MIO22_RXD__PS_MIO23_TXD.jpg)
 
-I used a [CH341A](https://github.com/stahir/CH341-Store/tree/5b4fda3add3d492f14f73a8376c580644f6c8195) USB-UART module set to TTL Mode (Pins 2-3 connected) and a 1.8V Adapter.
+I was also able to use a [CH341A](https://github.com/stahir/CH341-Store/tree/5b4fda3add3d492f14f73a8376c580644f6c8195) USB-UART module set to TTL Mode (Pins 2-3 connected) and a 1.8V Adapter.
 
 ![Testing 1.8V UART](img/U25_Testing_UART-Debug_Connector_A8_A9.jpg)
 
 A fixed-function 1.8V adapter such as one based on a [74ALVC164245](https://assets.nexperia.com/documents/data-sheet/74ALVC164245.pdf) is preferred over a bidrectional voltage translator such as the [TXB0108](https://www.ti.com/lit/ds/symlink/txb0108.pdf).
 
 ![1.8V Adapter](img/1.8V_Adapter.jpg)
-
-The UART module reads garbage from both A8 and A9.
-```
-00000000: 9589 49c2 4c46 b292 9b93 c144 981e 0c90  ..I.LF.....D....
-00000010: 6674 0020 c61c 704e cc8c 0818 30c2 8688  ft. ..pN....0...
-00000020: dce6 8c22 8492 a5a9 a8a0 2909 55a9 a951  ..."......).U..Q
-00000030: 4b41 1291 643b 0328 02ac ab4f 1149 48c3  KA..d;.(...O.IH.
-00000040: 0d69 2920 c2db 80c2 3806 49d3 0640 86d7  .i) ....8.I..@..
-```
-
-Both A8 and A9 output a constant 1.8V when connected directly to a 1M-ohm input impedance oscilloscope. When also connected to the 1.8V adapter the lines have a voltage bias and very slow rising edges. A pull-up resistor does not help. These are not [open-drain](https://en.wikipedia.org/wiki/Open_collector#Open_drain).
-
-![U25 Debug Connector A8 A9 Oscilloscope](img/U25_Debug_Connector_A8_A9_Oscilloscope.jpg)
 
 
 
@@ -187,7 +184,7 @@ The [SAMD20J16](https://www.microchip.com/en-us/product/ATSAMD20J16)'s [Serial W
 
 ![SAMD20 Reset and Serial Wire Debug SWD](img/U25_SAMD20_SWD_Signals.jpg)
 
-The [SOT23-3](https://en.wikipedia.org/wiki/Small-outline_transistor#SOT23-3,_SOT323,_SOT416) transistors marked `W4T` are possibly [BSH111BK](https://assets.nexperia.com/documents/data-sheet/BSH111BK.pdf) N-Channel MOSFETs. From the [PBHV8540T](https://web.archive.org/web/20120512162654/http://www.nxp.com/documents/data_sheet/PBHV8540T.pdf) datasheet it appears `W` is a site code and `4T` is the part code for the BSH111BK. However, the markings [look like Diodes Incorporated markings](https://www.google.com/search?q=%22W4%22+%22Product+Marking%22+site:diodes.com).
+The [SOT23-3](https://en.wikipedia.org/wiki/Small-outline_transistor#SOT23-3,_SOT323,_SOT416) transistors marked `W4T` are possibly [BSH111BK](https://assets.nexperia.com/documents/data-sheet/BSH111BK.pdf) N-Channel MOSFETs. `?4T` is the [BSH111BK](https://assets.nexperia.com/documents/data-sheet/BSH111BK.pdf) marking. From the [PBHV8540T](https://web.archive.org/web/20120512162654/http://www.nxp.com/documents/data_sheet/PBHV8540T.pdf) datasheet it appears `W` is a site code. However, the markings [look like Diodes Incorporated markings](https://www.google.com/search?q=%22W4%22+%22Product+Marking%22+site:diodes.com) but they do not have a product marked `W4T`.
 
 ![SOT23-3 with W4T Marking is BSH111BK](img/Transistor_MOSFET_NCH_BSH111BK_SOT23-3_W4T-Marking.png)
 
@@ -323,6 +320,10 @@ The Reset signal is buffered into two 1.8V traces using an IC marked `A5AA`, U27
 The clock signal pair can further be traced to pins AK11 and AK12. The 9th PCIe Lane, RX08, can be traced to AM7 and AM8, which are a transmit pair.
 
 ![PCIe Lane 8](img/U25_PCIe_9thRX_Lane08.jpg)
+
+In Vivado, the following constraints can be used when setting up PCIe:
+
+![U25 PCIe x1 Constraints](img/U25_PCIe_x1_Pin_Constraints.png)
 
 
 
