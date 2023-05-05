@@ -53,31 +53,31 @@ sudo /tools/Xilinx/Vitis/2021.2/bin/vitis
 
 Start a new _Application Project_.
 
-![](U25_Vitis_Step_01-New_Application_Project.png)
+![New Application Project](img/U25_Vitis_Step_01-New_Application_Project.png)
 
 Create a New Platform using a Hardware Description XSA File generated in Vivado.
 
-![](U25_Vitis_Step_02-Create_New_Platform_from_XSA.png)
+![New Platform from XSA](img/U25_Vitis_Step_02-Create_New_Platform_from_XSA.png)
 
 Give it a name.
 
-![](U25_Vitis_Step_03-Give_Project_a_Name.png)
+![Name It](img/U25_Vitis_Step_03-Give_Project_a_Name.png)
 
 Target the first core.
 
-![](U25_Vitis_Step_04-Target_First_Core.png)
+![Target Core 0](img/U25_Vitis_Step_04-Target_First_Core.png)
 
 Make it a trivial Hello World project.
 
-![](U25_Vitis_Step_05-Simple_UART_Output_Demo.png)
+![Simple Hello World UART Demo](img/U25_Vitis_Step_05-Simple_UART_Output_Demo.png)
 
 Open `helloworld.c` and edit the UART output text to loop forever.
 
-![](U25_Vitis_Step_06-Demo_Should_Loop_UART_Output.png)
+![Forever Loop UART](img/U25_Vitis_Step_06-Demo_Should_Loop_UART_Output.png)
 
 Right-click on **Release** in the Assistant and click Build.
 
-![](U25_Vitis_Step_07-Right-Click_in_Assistant_to_Build_Demo.png)
+![Build Demo](img/U25_Vitis_Step_07-Right-Click_in_Assistant_to_Build_Demo.png)
 
 Run the following commands in the [XSCT Console](https://docs.xilinx.com/r/en-US/ug1400-vitis-embedded/XSCT-Commands) to enable the Zynq for programming and Debug by getting it out of the `L2 Cache Reset` state.
 ```
@@ -92,23 +92,23 @@ stop
 targets
 ```
 
-![](U25_Vitis_Step_08-Run_Commands_in_xsct_Console_to_exit_L2_Cache_Reset.png)
+![xsct Console](img/U25_Vitis_Step_08-Run_Commands_in_xsct_Console_to_exit_L2_Cache_Reset.png)
 
 Right-click on **Release** in the Assistant and click Run, Launch Hardware.
 
-![](U25_Vitis_Step_09-Run_Launch_Hardware_in_Assistant.png)
+![Launch Hardware](img/U25_Vitis_Step_09-Run_Launch_Hardware_in_Assistant.png)
 
 Right-click on **Release** in the Assistant and click Run, Debugger.
 
-![](U25_Vitis_Step_10-Run_Launch_Hardware_Second_Time.png)
+![Launch Hardware Second Time](img/U25_Vitis_Step_10-Run_Launch_Hardware_Second_Time.png)
 
 Wait for the FPGA to program.
 
-![Wait for Programming](U25_Vitis_Step_11-Wait_for_Programming_to_Finish.png)
+![Wait for Programming](img/U25_Vitis_Step_11-Wait_for_Programming_to_Finish.png)
 
 Allow Boot Mode overwrite.
 
-![Allow Boot Mode Overwrite](U25_Vitis_Step_12-Allow_Overwrite_Boot_Mode.png)
+![Allow Boot Mode Overwrite](img/U25_Vitis_Step_12-Allow_Overwrite_Boot_Mode.png)
 
 For me, the Zynq gets stuck after running the First Stage Boot Loader (FSBL).
 
