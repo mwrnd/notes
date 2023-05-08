@@ -147,7 +147,7 @@ B9 measures 3.3V and has 1k-ohm series resistance to the 3.3V rail. It has 100-o
 
 The pins measure 1.8V. The [U25N Notes](https://xilinx.github.io/U25N-SmartNIC-Solution/docs/build/html/docs/ug1534-shellprogramming.html) mention a UART and [astronomy8 on the ServeTheHome Forum found A8 and A9 are being used](https://forums.servethehome.com/index.php?threads/identifying-some-curious-xilinx-solarflare-cards.35111/post-369295).
 
-After [enabling JTAG](https://github.com/mwrnd/notes/tree/main/Alveo_U25#connect-jtag-adapter-and-allow-vivado-to-update-platform-cable-usb-ii-firmware) I was able to use UrJTAG to test pins A8 and A9. A8 connects to `PS_MIO22` which is **RXD** and A9 connects to `PS_MIO23` which is **TXD**.
+After [enabling JTAG](https://github.com/mwrnd/notes/tree/main/Alveo_U25#connect-jtag-adapter-and-allow-vivado-to-update-platform-cable-usb-ii-firmware) I was able to use UrJTAG to test pins A8 and A9. A8 connects to `PS_MIO22` (`AH32`) which is **RXD** and A9 connects to `PS_MIO23` (`AG35`) which is **TXD**.
 
 I used a [SN74AVC4T774](https://www.ti.com/product/SN74AVC4T774) Voltage Translator on a [TSSOP](https://www.ti.com/lit/pdf/mpds361a)-to-DIP adapter ([1](https://www.trustedparts.com/en/search/PA0193), [2](https://www.trustedparts.com/en/search/LCQT-TSSOP16)).
 
