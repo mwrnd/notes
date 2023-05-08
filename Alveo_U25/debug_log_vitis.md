@@ -31,16 +31,30 @@ Enable UART0:
 
 ![Zynq PS UART0](img/Zynq_PS_Setup-UART0.png)
 
+Output clocks:
+
+![Zynq PS Output Clocks](img/Zynq_PS_Setup-Output_Clocks.png)
+
 Export Hardware Platform XSA:
 
-**TODO**
+![Vivado Export Hardware Platform XSA](img/Vivado_Export_Hardware_XSA.png)
+
+Include Bitstream
+
+![Include Bitstream](img/Vivado_Export_Hardware_XSA_Include_Bitstream.png)
 
 
 
 
 ## Zynq MPSoC Software Demo in Vitis
 
-Connect your JTAG Adapter and [UART Adapter with 1.8V Logic Translation](https://github.com/mwrnd/notes/blob/main/Alveo_U25/debug_log.md#attempt-to-trace-a8-a9-debug-connector-signals) to your U25.
+Connect your JTAG Adapter and [UART Adapter with 1.8V Logic Translation](https://github.com/mwrnd/notes/blob/main/Alveo_U25/debug_log.md#attempt-to-trace-a8-a9-debug-connector-signals) to your U25. I use a [SN74AVC4T774](https://www.ti.com/product/SN74AVC4T774) Voltage Translator on a [TSSOP](https://www.ti.com/lit/pdf/mpds361a)-to-DIP adapter ([1](https://www.trustedparts.com/en/search/PA0193), [2](https://www.trustedparts.com/en/search/LCQT-TSSOP16)).
+
+![JTAG and UART with 1.8V Adapter](img/U25_UART-Level-Shifter_I2C_MCP2221.jpg)
+
+[SN74AVC4T774](https://www.ti.com/lit/ds/symlink/sn74avc4t774.pdf) connections:
+
+![U25 UART Voltage Translator](img/U25_UART_MCP2221_Voltage_Translator.png)
 
 Start [`gtkterm`](https://manpages.ubuntu.com/manpages/focal/man1/gtkterm.1.html) or your favorite UART terminal.
 
@@ -84,6 +98,10 @@ Run the following commands in the [XSCT Console](https://docs.xilinx.com/r/en-US
 connect
 after 10000
 targets
+targets -set -nocase -filter {name =~ "*PSU*"}
+mwr 0xff5e0200 0x0100
+rst -system
+after 1000
 targets -set -nocase -filter {name =~ "*APU*"}
 mwr 0xffff0000 0x14000000
 mask_write 0xFD1A0104 0x501 0x0
@@ -92,46 +110,31 @@ stop
 targets
 ```
 
-![xsct Console](img/U25_Vitis_Step_08-Run_Commands_in_xsct_Console_to_exit_L2_Cache_Reset.png)
+![xsct Console](img/U25_Vitis_Step_08-Run_Commands_in_xsct_Console.png)
 
 Right-click on **Release** in the Assistant and click Run, Launch Hardware.
 
 ![Launch Hardware](img/U25_Vitis_Step_09-Run_Launch_Hardware_in_Assistant.png)
 
-Right-click on **Release** in the Assistant and click Run, Debugger.
-
-![Launch Hardware Second Time](img/U25_Vitis_Step_10-Run_Launch_Hardware_Second_Time.png)
-
 Wait for the FPGA to program.
 
-![Wait for Programming](img/U25_Vitis_Step_11-Wait_for_Programming_to_Finish.png)
+![Wait for Programming](img/U25_Vitis_Step_10-Wait_for_Programming_to_Finish.png)
 
 Allow Boot Mode overwrite.
 
-![Allow Boot Mode Overwrite](img/U25_Vitis_Step_12-Allow_Overwrite_Boot_Mode.png)
+![Allow Boot Mode Overwrite](img/U25_Vitis_Step_11-Allow_Overwrite_Boot_Mode.png)
 
 For me, the Zynq gets stuck after running the First Stage Boot Loader (FSBL).
 
-![Stuck on FSBL](img/U25_Boots_First_Stage_Boot_Loader_FSBL.png)
+![Hello World Runs Successfully](img/U25_HelloWorld_Test.png)
 
-Here is the XCST Console output. Explore [Note1](https://support.xilinx.com/s/article/68657?language=en_US), [Note2](https://support.xilinx.com/s/question/0D52E00006hpMMtSAM/possible-to-fix-sd-card-boot-remotely?language=en_US).
+Here is the XCST Console output. See [Note1](https://support.xilinx.com/s/article/68657?language=en_US) and  [Note2](https://support.xilinx.com/s/question/0D52E00006hpMMtSAM/possible-to-fix-sd-card-boot-remotely?language=en_US).
 
 ```
-****** Xilinx Software Commandline Tool (XSCT) v2021.2.0
-  **** SW Build 3363252 on 2021-10-14-04:41:01
-    ** Copyright 1986-2021 Xilinx, Inc. All Rights Reserved.
-
-
-xsct% XSDB Server URL: TCP:localhost:36515
+xsct% XSDB Server URL: TCP:localhost:40051
 xsct% XSDB Server Channel: tcfchan#0
 INFO: [Hsi 55-2053] elapsed time for repository (/tools/Xilinx/Vitis/2021.2/data/embeddedsw) loading 0 seconds
-Loading the sw platform from /home/user/projects/workspace/u25uart2_wrapper2/platform.spr
-Reading the platform  : "u25uart2_wrapper2"
-Opening the hardware design, this may take few seconds.
-WARNING : No interface that uses file system is available 
-
-/tools/Xilinx/Vitis/2021.2/gnu/microblaze/lin
-INFO: Populating the default qemu data for the domain "standalone_psu_cortexa53_0" from the install location /tools/Xilinx/Vitis/2021.2/data/emulation/platforms/zynqmp/sw/a53_standalone/qemu/
+connect
 attempting to launch hw_server
 hw_server
 
@@ -144,48 +147,53 @@ INFO: Use Ctrl-C to exit hw_server application
 
 INFO: To connect to this hw_server instance use url: TCP:127.0.0.1:3121
 
-connect
-tcfchan#2
+tcfchan#1
+xsct% after 10000
 xsct% targets
   1  PS TAP
      2  PMU
      3  PL
-  4  PSU
-     5  RPU (Reset)
-        6  Cortex-R5 #0 (RPU Reset)
-        7  Cortex-R5 #1 (RPU Reset)
-     8  APU (L2 Cache Reset)
-        9  Cortex-A53 #0 (APU Reset)
-       10  Cortex-A53 #1 (APU Reset)
-       11  Cortex-A53 #2 (APU Reset)
-       12  Cortex-A53 #3 (APU Reset)
+  6  PSU
+     7  RPU (Reset)
+        8  Cortex-R5 #0 (RPU Reset)
+        9  Cortex-R5 #1 (RPU Reset)
+    10  APU (L2 Cache Reset)
+       11  Cortex-A53 #0 (APU Reset)
+       12  Cortex-A53 #1 (APU Reset)
+       13  Cortex-A53 #2 (APU Reset)
+       14  Cortex-A53 #3 (APU Reset)
+xsct% targets -set -nocase -filter {name =~ "*PSU*"}
+xsct% mwr 0xff5e0200 0x0100
+xsct% rst -system
+xsct% after 1000
 xsct% targets -set -nocase -filter {name =~ "*APU*"}
 xsct% mwr 0xffff0000 0x14000000
 xsct% mask_write 0xFD1A0104 0x501 0x0
 xsct% targets -set -nocase -filter {name =~ "*A53*#0"}
 xsct% stop
-Info: Cortex-A53 #0 (target 9) Stopped at 0xffff0000 (External Debug Request)
+Info: Cortex-A53 #0 (target 11) Stopped at 0xffff0000 (External Debug Request)
 xsct% targets
   1  PS TAP
      2  PMU
      3  PL
-  4  PSU
-     5  RPU (Reset)
-        6  Cortex-R5 #0 (RPU Reset)
-        7  Cortex-R5 #1 (RPU Reset)
-     8  APU
-        9* Cortex-A53 #0 (External Debug Request, EL3(S)/A64)
-       10  Cortex-A53 #1 (Power On Reset)
-       11  Cortex-A53 #2 (Power On Reset)
-       12  Cortex-A53 #3 (Power On Reset)
-xsct% 
+  6  PSU
+     7  RPU (Reset)
+        8  Cortex-R5 #0 (RPU Reset)
+        9  Cortex-R5 #1 (RPU Reset)
+    10  APU
+       11* Cortex-A53 #0 (External Debug Request, EL3(S)/A64)
+       12  Cortex-A53 #1 (Power On Reset)
+       13  Cortex-A53 #2 (Power On Reset)
+       14  Cortex-A53 #3 (Power On Reset)
+xsct% hsi::open_hw_design: Time (s): cpu = 00:00:05 ; elapsed = 00:00:05 . Memory (MB): peak = 2185.172 ; gain = 0.000 ; free physical = 11124 ; free virtual = 44440
+
 initializing
   0%    0MB   0.0MB/s  ??:?? ETA
   1%    0MB   0.8MB/s  ??:?? ETA
 ...
  99%   34MB   0.3MB/s  00:00 ETA
 100%   34MB   0.3MB/s  01:41    
-Info: Cortex-A53 #0 (target 9) Stopped at 0xffff0000 (Reset Catch)
+Info: Cortex-A53 #0 (target 11) Stopped at 0xffff0000 (Reset Catch)
 Starting dow
 
 Downloading Program -- /home/user/projects/workspace/u25uart2_wrapper/export/u25uart2_wrapper/sw/u25uart2_wrapper/boot/fsbl.elf
@@ -218,9 +226,12 @@ Setting PC to Program Start Address 0xfffc0000
 Successfully downloaded /home/user/projects/workspace/u25uart2_wrapper/export/u25uart2_wrapper/sw/u25uart2_wrapper/boot/fsbl.elf
 Finished dow
 Info: Breakpoint 0 status:
-   target 9: {Address: 0xfffc82e4 Type: Hardware}
-xsct% Info: Cortex-A53 #0 (target 9) Running
-Info: Cortex-A53 #0 (target 9) Stopped at 0xffff0000 (Reset Catch)
+   target 11: {Address: 0xfffc82e4 Type: Hardware}
+xsct% Info: Cortex-A53 #0 (target 11) Running
+Info: Cortex-A53 #0 (target 11) Stopped at 0xfffc82e4 (Breakpoint)
+xsct% xsct% Info: Cortex-A53 #0 (target 11) Stopped at 0xfffc0000 (Hardware Breakpoint)
+_vector_table() at asm_vectors.S: 199
+199: 	b	_boot
 Starting dow
 
 Downloading Program -- /home/user/projects/workspace/test/Release/test.elf
@@ -251,63 +262,85 @@ Downloading Program -- /home/user/projects/workspace/test/Release/test.elf
 	section, .heap: 0x000090c0 - 0x0000b0bf
 	section, .stack: 0x0000b0c0 - 0x0000e0bf
 
-
   0%    0MB   0.0MB/s  ??:?? ETA
- 19%    0MB   0.0MB/s  ??:?? ETA
- 39%    0MB   0.0MB/s  ??:?? ETA
- 59%    0MB   0.0MB/s  ??:?? ETA
- 79%    0MB   0.0MB/s  ??:?? ETA
- 99%    0MB   0.0MB/s  00:00 ETA
-100%    0MB   0.0MB/s  00:03    
-Setting PC to Program Start Address 0xfffc0000
-Successfully downloaded /home/user/projects/workspace/u25uart2_wrapper/export/u25uart2_wrapper/sw/u25uart2_wrapper/boot/fsbl.elf
+ 44%    0MB   0.0MB/s  ??:?? ETA
+ 88%    0MB   0.0MB/s  ??:?? ETA
+100%    0MB   0.0MB/s  00:01    
+Setting PC to Program Start Address 0x00000000
+Successfully downloaded /home/user/projects/workspace/test/Release/test.elf
 Finished dow
-Info: Breakpoint 0 status:
-   target 9: {Address: 0xfffc82e4 Type: Hardware}
-xsct% Info: Cortex-A53 #0 (target 9) Running
-Info: Cortex-A53 #0 (target 9) Stopped at 0xffff0000 (Reset Catch)
-Starting dow
+Info: Cortex-A53 #0 (target 11) Running
+```
 
-Downloading Program -- /home/user/projects/workspace/test/Release/test.elf
-	section, .text: 0x00000000 - 0x000014b3
-	section, .init: 0x000014c0 - 0x000014f3
-	section, .fini: 0x00001500 - 0x00001533
-	section, .rodata: 0x00001538 - 0x000015a7
-	section, .rodata1: 0x000015a8 - 0x000015bf
-	section, .sdata2: 0x000015c0 - 0x000015bf
-	section, .sbss2: 0x000015c0 - 0x000015bf
-	section, .data: 0x000015c0 - 0x00001d77
-	section, .data1: 0x00001d78 - 0x00001d7f
-	section, .note.gnu.build-id: 0x00001d80 - 0x00001da3
-	section, .ctors: 0x00001da4 - 0x00001dbf
-	section, .dtors: 0x00001dc0 - 0x00001dbf
-	section, .eh_frame: 0x00001dc0 - 0x00001dc3
-	section, .mmu_tbl0: 0x00002000 - 0x0000200f
-	section, .mmu_tbl1: 0x00003000 - 0x00004fff
-	section, .mmu_tbl2: 0x00005000 - 0x00008fff
-	section, .preinit_array: 0x00009000 - 0x00008fff
-	section, .init_array: 0x00009000 - 0x00009007
-	section, .fini_array: 0x00009008 - 0x00009047
-	section, .sdata: 0x00009048 - 0x0000907f
-	section, .sbss: 0x00009080 - 0x0000907f
-	section, .tdata: 0x00009080 - 0x0000907f
-	section, .tbss: 0x00009080 - 0x0000907f
-	section, .bss: 0x00009080 - 0x000090bf
-	section, .heap: 0x000090c0 - 0x0000b0bf
-	section, .stack: 0x0000b0c0 - 0x0000e0bf
 
-  0%    0MB   0.0MB/s  ??:?? ETA
-aborting, 2 pending requests... 
-aborting, 1 pending requests... 
-Failed to download /home/user/projects/workspace/test/Release/test.elf
-Info: Cortex-A53 #0 (target 9) Stopped at 0x0 (Cannot resume. Cannot read 'pc'. Cannot read 'r0'. Cortex-A53 #0: EDITR not ready)
-xsct% 
 
-xsct% mrd 0x80000000 16
-Memory read error at 0x80000000. Cannot read sctlr_el3. Cannot read r0. Cortex-A53 #0: EDITR not ready
+## Zynq MPSoC DRAM Tests Demo in Vitis
 
-xsct% mrd 0xFFD80528 1
-Memory read error at 0xFFD80528. Cannot read sctlr_el3. Cannot read r0. Cortex-A53 #0: EDITR not ready
+Follow the [same procedure as above](#zynq-mpsoc-software-demo-in-vitis) but select Zynq MP DRAM Tests as the template applicatio.
+
+![New Application DRAM Tests](img/U25_Vitis_New_Application_Project_DRAM_Tests.png)
+
+XSCT Console upload:
+
+![xsct Upload DRAM Tests](img/U25_DRAM_Tests_Vitis_Upload.png)
+
+DRAM Tests Running:
+
+![DRAM Tests Running](img/U25_MPSoC_DDR4_Tests_Running.png)
+
+All 4GB of DDR4 works:
+
+![4GB DRAM Works](img/U25_Zynq_DRAM_Tests_4GB_Working.png)
+
+
+
+
+## TODO
 
 ```
+cd /home/user/projects/workspace
+pwd
+
+
+#Disable Security gates to view PMU MB target
+targets -set -filter {name =~ "PSU"}
+ 
+#By default, JTAG security gates are enabled
+#This disables security gates for DAP, PLTAP and PMU.
+mwr 0xffca0038 0x1ff
+after 500
+ 
+#Load and run PMU FW
+targets -set -filter {name =~ "MicroBlaze PMU"}
+dow u25uart2_wrapper/zynqmp_pmufw/pmufw.elf
+con
+after 500
+ 
+#Reset A53, load and run FSBL
+targets -set -filter {name =~ "Cortex-A53 #0"}
+rst -processor
+dow u25uart2_wrapper/zynqmp_fsbl/fsbl_a53.elf
+con
+ 
+#Give FSBL time to run
+after 5000
+stop
+ 
+#Other SW...
+dow -data system.dtb 0x100000
+dow u-boot.elf
+dow bl31.elf
+con
+after 5000
+stop
+
+# Users need to pick a DDR location away from other Linux binaries
+dow -data BOOT.bin 0x2000000
+con
+```
+
+U-Boot from ZCU102 Partially Boots:
+
+![U-Boot from ZCU102 Partially Boots](img/Need_to_Compile_U-Boot_Targeting_Device.png)
+
 

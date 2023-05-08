@@ -202,14 +202,6 @@ readback_hw_device [current_hw_device]  -readback_file zu19eg_u25_r.rbd  -bin_fi
 
 ## Miscallaneous Notes
 
-PCIe JTAG signals are connected to somewhere on the board through a [SN74AVC4T774](https://www.ti.com/product/SN74AVC4T774)([ZVK Part Marking](https://www.ti.com/packaging/en/docs/partlookup.tsp?partmarking=ZVK)) voltage translating buffer IC.
-
-![PCIe JTAG Pins are Used on the Board](img/U25_PCIe_JTAG_is_Connected.jpg)
-
-The Zynq JTAG pins have two buffer ICs connected to them.
-
-![Multiple JTAG Sources](img/U25_Programming_Header_has_two_JTAG_Sources.jpg)
-
 [XCU25==XCZU19EG-FFVC1760](https://en.wikipedia.org/w/index.php?title=List_of_Xilinx_FPGAs&oldid=1129244401) Banks from [Zynq Ultrascale+ Device Packaging and Pinouts](https://docs.xilinx.com/v/u/en-US/ug1075-zynq-ultrascale-pkg-pinout).
 
 ![XCU25 XCZU19EG FFVC1760 Banks](img/XCU25_XCZU19EG_FFVC1760_Banks_ug1075.png)
@@ -247,9 +239,14 @@ The Zynq JTAG pins have two buffer ICs connected to them.
 
 [Alveo U25 Member Page](https://www.xilinx.com/member/u25.html)
 
+[Alveo U25 Product Brief](https://www.xilinx.com/content/dam/xilinx/publications/product-briefs/alveo-u25-product-brief.pdf)
+
 [Alveo U25N Product Brief](https://www.xilinx.com/content/dam/xilinx/publications/product-briefs/xilinx-u25N-product-brief.pdf) is almost identical but lacks the FPGA to PCIe connections.
 
 [U25N Install Notes](https://xilinx.github.io/U25N-SmartNIC-Solution/docs/build/html/docs/ug1534-installation.html)
 
-[MT25QU01](https://media-www.micron.com/-/media/client/global/documents/products/data-sheet/nor-flash/serial-nor/mt25q/die-rev-b/mt25q_qlkt_u_01g_bbb_0.pdf)([RW188 FBGA Code](https://www.micron.com/support/tools-and-utilities/fbga?fbga=RW188#pnlFBGA)) is the QSPI Configuration Memory flash IC.
+[MT40A512M16LY-062E](https://media-www.micron.com/-/media/client/global/documents/products/data-sheet/dram/ddr4/8gb_ddr4_sdram.pdf)([D9WFJ FBGA Code](https://www.micron.com/support/tools-and-utilities/fbga?fbga=D9WFJ#pnlFBGA)) is the DDR4 memory IC used on the U25.
+
+[MT25QU01](https://media-www.micron.com/-/media/client/global/documents/products/data-sheet/nor-flash/serial-nor/mt25q/die-rev-b/mt25q_qlkt_u_01g_bbb_0.pdf)([RW188 FBGA Code](https://www.micron.com/support/tools-and-utilities/fbga?fbga=RW188#pnlFBGA)) is the QSPI Configuration Memory flash IC used on the U25.
+
 
