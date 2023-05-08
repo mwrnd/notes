@@ -487,7 +487,7 @@ However, something **was** programmed! An old version of the FSBL, from `partiti
 
 ![Old FSBL Running](img/Boot_Failing_but_FSBL_Running_from_QSPI.png)
 
-The Zynq FSBL is used during programming has a recent compile date and version, not `2019.2`.
+The Zynq FSBL I used during programming has a recent compile date and version, not `2019.2`.
 
 ![Zynq FSBL is from May7](img/Zynq_FSBL_Used_is_from_May7_2023.png)
 
