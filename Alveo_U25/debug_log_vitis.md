@@ -23,7 +23,7 @@ DDR4:
 
 ![Zynq PS DDR4](img/Zynq_PS_Setup-DDR4.png)
 
-Enable QSPI:
+Enable QSPI and set the MIO Banks to 1.8V:
 
 ![Zynq PS QSPI](img/Zynq_PS_Setup-QSPI.png)
 
@@ -124,7 +124,7 @@ Allow Boot Mode overwrite.
 
 ![Allow Boot Mode Overwrite](img/U25_Vitis_Step_11-Allow_Overwrite_Boot_Mode.png)
 
-For me, the Zynq gets stuck after running the First Stage Boot Loader (FSBL).
+The Zynq runs the First Stage Boot Loader (FSBL) and then proceeds to print `Hello World` indefinitely.
 
 ![Hello World Runs Successfully](img/U25_HelloWorld_Test.png)
 
@@ -276,7 +276,7 @@ Info: Cortex-A53 #0 (target 11) Running
 
 ## Zynq MPSoC DRAM Tests Demo in Vitis
 
-Follow the [same procedure as above](#zynq-mpsoc-software-demo-in-vitis) but select Zynq MP DRAM Tests as the template applicatio.
+Follow the [same procedure as above](#zynq-mpsoc-software-demo-in-vitis) but select Zynq MP DRAM Tests as the template application.
 
 ![New Application DRAM Tests](img/U25_Vitis_New_Application_Project_DRAM_Tests.png)
 

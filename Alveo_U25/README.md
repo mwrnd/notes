@@ -66,7 +66,7 @@ exit
 
 #### Connect JTAG Adapter and Allow Vivado to Update Platform Cable USB II Firmware
 
-Connect your JTAG Adapter to the Alveo U25.
+Connect your JTAG Adapter to the Alveo U25. The Alveo needs to be powered over its PCIe connection.
 
 ![JTAG Connected](img/AlveoU25_JTAG_Connected.jpg)
 
@@ -221,7 +221,7 @@ readback_hw_device [current_hw_device]  -readback_file zu19eg_u25_r.rbd  -bin_fi
 
 [Zynq Ultrascale+ MPSoC Datasheet](https://www.xilinx.com/content/dam/xilinx/support/documents/data_sheets/ds925-zynq-ultrascale-plus.pdf)
 
-[Zynq UltraScale+ Devices Register Reference](https://www.xilinx.com/htmldocs/registers/ug1087/ug1087-zynq-ultrascale-registers.html)
+[Zynq UltraScale+ Devices Register Reference](https://docs.xilinx.com/r/en-US/ug1087-zynq-ultrascale-registers/Overview)([HTML](https://www.xilinx.com/htmldocs/registers/ug1087/ug1087-zynq-ultrascale-registers.html)) is [Downloadable](https://www.xilinx.com/html_docs/registers/ug1087/ug1087-zynq-ultrascale-registers.zip)
 
 [ServeTheHome Forum](https://forums.servethehome.com/index.php?threads/identifying-some-curious-xilinx-solarflare-cards.35111) post about the Alveo U25
 
@@ -238,6 +238,10 @@ readback_hw_device [current_hw_device]  -readback_file zu19eg_u25_r.rbd  -bin_fi
 [Alveo Platform Partitions](https://xilinx.github.io/XRT/master/html/platforms_partitions.html)
 
 [Alveo U25 Member Page](https://www.xilinx.com/member/u25.html)
+
+[U25 Xilinx Lenovo Page](https://www.xilinx.com/products/boards-and-kits/alveo/oem-partner/lenovo-servers.html) has a [Production Package](https://www.xilinx.com/content/dam/xilinx/publications/products/board-kits/u25_production_package_nov20.zip) and a [Utilities Package](https://www.xilinx.com/content/dam/xilinx/support/download/lenovo/xn-200528-ls-3-x2522-25g-u25-lenovo-linux-utilities-rpm-64-bit.zip)
+
+[U25 Cloud Instance](https://vmaccel.com/xilinxtrial/)
 
 [Alveo U25 Product Brief](https://www.xilinx.com/content/dam/xilinx/publications/product-briefs/alveo-u25-product-brief.pdf)
 
