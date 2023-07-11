@@ -181,9 +181,13 @@ The [SAMD20J16](https://www.microchip.com/en-us/product/ATSAMD20J16)'s [Serial W
 
 ![SAMD20 Reset and Serial Wire Debug SWD](img/U25_SAMD20_SWD_Signals.jpg)
 
-The [SOT23-3](https://en.wikipedia.org/wiki/Small-outline_transistor#SOT23-3,_SOT323,_SOT416) transistors marked `W4T` are possibly [BSH111BK](https://assets.nexperia.com/documents/data-sheet/BSH111BK.pdf) N-Channel MOSFETs. `?4T` is the [BSH111BK](https://assets.nexperia.com/documents/data-sheet/BSH111BK.pdf) marking. From the [PBHV8540T](https://web.archive.org/web/20120512162654/http://www.nxp.com/documents/data_sheet/PBHV8540T.pdf) datasheet it appears `W` is a site code. However, the markings [look like Diodes Incorporated markings](https://www.google.com/search?q=%22W4%22+%22Product+Marking%22+site:diodes.com) but they do not have a product marked `W4T`.
+The [SOT23-3](https://en.wikipedia.org/wiki/Small-outline_transistor#SOT23-3,_SOT323,_SOT416) transistors marked `W4T` are [BSH111BK](https://assets.nexperia.com/documents/data-sheet/BSH111BK.pdf) N-Channel MOSFETs. `?4T` is the [BSH111BK](https://assets.nexperia.com/documents/data-sheet/BSH111BK.pdf) marking. From the [PBHV8540T](https://web.archive.org/web/20120512162654/http://www.nxp.com/documents/data_sheet/PBHV8540T.pdf) datasheet, `W` is a site code.
 
 ![SOT23-3 with W4T Marking is BSH111BK](img/Transistor_MOSFET_NCH_BSH111BK_SOT23-3_W4T-Marking.png)
+
+The markings match a recently purchased BSH111BKR.
+
+![BSH111BK has W4T Marking](img/BSH111BKR_W4T-Marking.jpg)
 
 I was unable to trace the Reset line to any external connector.
 
@@ -298,6 +302,15 @@ mrd 0xFFCA500C 1
 
 
 
+### Zynq Boot Halts on Tamper Detection when U25 Powered with JTAG Connected
+
+The U25 has a Tamper Detected BootROM Error Code if it is powered while JTAG is connected. The simplest solution is to power the JTAG adapter _AFTER_ powering up the U25.
+
+![Tamper Detected when Powered with JTAG Connected](img/Tamper_Status_if_U25_Powered_when_JTAG_Connected.png)
+
+
+
+
 ## Tracing PCIe Connections
 
 The Alveo U25 has an x16 PCI Express connection that needs to be bifurcated into two x8 connections to allow both the [Solarflare SFC9250 X2 GbE Controller](https://www.xilinx.com/products/boards-and-kits/x2-series.html) and Zynq FPGA SoC to communicate with the host.
@@ -380,6 +393,25 @@ sha256sum u25_25f128_read*
 ```
 
 ![IS25WP128 FLASH Read then Erase](img/U25_IS25WP128_FLASH_Read_then_Erase.jpg)
+
+
+
+
+## Add Jumper to Mode1 Pin to Allow JTAG Booting
+
+The Mode1 Pin (AC28) is connected via a 0-ohm resistor to 1.8V to set QSPI as the Boot Mode.
+
+![Mode1 Pin](img/Alveo_U25_Mode1_Pin_AC28.jpg)
+
+This is a very fragile modification but I managed to replace the 0201 size 0-ohm resistor with a 0402 size 10k-ohm resistor and then solder a jumper across the resistor and to the nearest GND.
+
+![Mode1 Pin Jumper](img/Alveo_U25_Mode1_Jumper_Conversion.jpg)
+
+I can now connect the Mode1 pin to GND to boot the U25 in JTAG Mode which allows programming the QSPI Flash memory.
+
+![Connect Mode1 to GND to JTAG Boot](img/Alveo_U25_Mode1_Jumper_Usage2.jpg)
+
+![Connect Mode1 to GND to JTAG Boot](img/Alveo_U25_Mode1_Jumper_Usage.jpg)
 
 
 
@@ -488,6 +520,76 @@ However, something **was** programmed! An old version of the FSBL, from `partiti
 The Zynq FSBL I used during programming has a recent compile date and version, not `2019.2`.
 
 ![Zynq FSBL is from May7](img/Zynq_FSBL_Used_is_from_May7_2023.png)
+
+
+
+
+## Forcing sfc Driver Attach Crashes Computer
+
+It is possible to force a device to bind to a driver. I found the U25's PCI bus address using `lspci -D` and then forced it to bind to the [`sfc` driver](https://www.xilinx.com/support/download/nic-software-and-drivers.html).
+
+```
+lspci -D
+sudo su
+modprobe sfc
+lsmod | grep sfc
+echo 0000:01:00.0 > /sys/bus/pci/drivers/sfc/bind
+```
+
+The result is that the system crashes:
+
+```
+[name@localhost ~]$ sudo su
+[sudo] password for name: 
+ABRT has detected 1 problem(s). For more info run: abrt-cli list --since 1688149458
+
+[root@localhost name]# abrt-cli list --since 1688149458
+id 1bc2b3f1596ce1d056a6f8d47e90440d00c0ddd4
+reason:         BUG: unable to handle kernel NULL pointer dereference at 0000000000000520
+time:           Fri 30 Jun 2023 02:28:22 PM EDT
+uid:            0 (root)
+count:          1
+Directory:      /var/spool/abrt/vmcore-127.0.0.1-2023-06-30-14:27:29
+Reported:       cannot be reported
+
+The Autoreporting feature is disabled. Please consider enabling it by issuing
+'abrt-auto-reporting enabled' as a user with root privileges
+```
+
+
+
+
+## lspci Output Does Not Change Regardless of Firmware Attempt
+
+I reprogrammed the [IS25WP128-JBLE](https://www.issi.com/WW/pdf/IS25WP032-064-128.pdf) 1.8V FLASH IC with the partial firmware files from [U25 X2 NIC Firmware](https://support.lenovo.com/us/en/downloads/ds548057-xilinx-u25-x2-nic-firmware-for-unknown-os)([8.1.3.1011-1](https://download.lenovo.com/servers/mig/2021/01/06/43174/xlnx-lnvgy_fw_nic_u25-8.1.3.1011-1_linux_x86-64.tgz)) and there was no change in `lspci -D -vnn -d 1924:` output. Same as when I erased the FLASH IC completely. `[1924:0b13]` is the default built-in X2 firmware.
+
+```
+0000:01:00.0 Ethernet controller [0200]: Solarflare Communications Device [1924:0b13] (rev 01)
+	Subsystem: Solarflare Communications Device [1924:0001]
+	Flags: fast devsel, IRQ 255
+	Memory at 8d000000 (64-bit, non-prefetchable) [disabled] [size=1M]
+	Memory at 8d100000 (64-bit, non-prefetchable) [disabled] [size=16K]
+	Capabilities: [40] Power Management version 3
+	Capabilities: [50] MSI: Enable- Count=1/1 Maskable- 64bit+
+	Capabilities: [70] Express Endpoint, MSI 00
+	Capabilities: [b0] MSI-X: Enable- Count=64 Masked-
+	Capabilities: [d0] Vital Product Data
+	Capabilities: [100] Advanced Error Reporting
+	Capabilities: [148] Device Serial Number 00-0f-53-ff-ff-00-00-00
+	Capabilities: [158] Power Budgeting <?>
+	Capabilities: [168] Alternative Routing-ID Interpretation (ARI)
+	Capabilities: [178] #19
+	Capabilities: [1a8] Single Root I/O Virtualization (SR-IOV)
+	Capabilities: [1e8] Transaction Processing Hints
+	Capabilities: [274] Access Control Services
+	Capabilities: [27c] Latency Tolerance Reporting
+	Capabilities: [284] L1 PM Substates
+	Capabilities: [294] #16
+	Capabilities: [2c4] #22
+	Capabilities: [2d0] Vendor Specific Information: ID=0001 Rev=1 Len=038 <?>
+	Capabilities: [308] Precision Time Measurement
+	Capabilities: [314] Vendor Specific Information: ID=0003 Rev=1 Len=054 <?>
+```
 
 
 
