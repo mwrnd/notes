@@ -536,7 +536,7 @@ lsmod | grep sfc
 echo 0000:01:00.0 > /sys/bus/pci/drivers/sfc/bind
 ```
 
-The result is that the system crashes:
+The result is that the system crashes. After reboot, the following:
 
 ```
 [name@localhost ~]$ sudo su
