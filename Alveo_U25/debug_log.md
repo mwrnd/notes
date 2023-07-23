@@ -413,13 +413,13 @@ This is a very delicate modification but I managed to replace the 0201-size 0-oh
 
 ![Mode1 Jumper Mod](img/U25_Mode1_Jumper_Mod-Mode1_Connection.jpg)
 
-I used the J15 (NO_FLASH) jumper footprint to mount the 4-pin 2mm header. One of the J15 pads has a 10k-ohm resistor to GND. I soldered one of the header legs to it. The other I soldered the Mode1 wire.
+I used the J15 (NO_FLASH) jumper footprint to mount the 4-pin 2mm header. One of the J15 pads has a 10k-ohm resistor to GND. I soldered one of the header legs to the GND pad of the resistor. The other leg I soldered the Mode1 wire.
 
 ![Mode1 Jumper Mod Header](img/U25_Mode1_Jumper_Mod-Jumper.jpg)
 
 I can now short the Mode1 pin to GND using a [2mm jumper](https://www.digikey.com/en/products/detail/sullins-connector-solutions/SPN02SYBN-RC/927356) to boot the U25 in JTAG Mode which allows programming the QSPI Flash memory.
 
-![Mode1 Jumper Mod JTAG Active](U25_Mode1_Jumper_Mod-JTAG_Active.jpg)
+![Mode1 Jumper Mod JTAG Active](img/U25_Mode1_Jumper_Mod-JTAG_Active.jpg)
 
 Without the jumper, QSPI boot is active.
 
