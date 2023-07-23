@@ -15,6 +15,8 @@ For testing, I have the U25 in a [PCIe x16 to x1 Riser Extender](https://www.goo
 
 Initial work was done by *astronomy8* and *victhor393* on the [ServeTheHome Forums](https://forums.servethehome.com/index.php?threads/identifying-some-curious-xilinx-solarflare-cards.35111/). The official [Alveo Programming Cable and Adapter User Guide](https://www.xilinx.com/content/dam/xilinx/support/documents/boards_and_kits/accelerator-cards/ug1377-alveo-programming-cable-user-guide.pdf) is useless.
 
+I am not willing to agree to the [Alveo U25 Member Page](https://www.xilinx.com/member/u25.html) terms which state you are not allowed to discuss the U25 so I am stuck figuring out how to make the board usable. I just want to be able to use the FPGA as I see fit.
+
 I began by taking pictures and annotating Config, Reset, and Status pins with pinouts from the [ug1075 Zynq Ultrascale+ Packaging and Pinouts](https://docs.xilinx.com/v/u/en-US/ug1075-zynq-ultrascale-pkg-pinout) guide. Luckily the board was designed with exposed vias for testing.
 
 ![U25 Annotated Pins](img/U25_Underside_Annotated_Pins.jpg)
@@ -403,15 +405,25 @@ The Mode1 Pin (AC28) is connected via a 0-ohm resistor to 1.8V to set QSPI as th
 
 ![Mode1 Pin](img/Alveo_U25_Mode1_Pin_AC28.jpg)
 
-This is a very fragile modification but I managed to replace the 0201 size 0-ohm resistor with a 0402 size 10k-ohm resistor and then solder a jumper across the resistor and to the nearest GND.
+Prepare a [4-Pin 2-mm header](https://www.digikey.com/en/products/detail/adam-tech/2PH1-04-UA/9830490) by bending two pins on one end to right-angles. Also, prepare a single conductor of [0.050" 7-strand ribbon cable](https://www.digikey.com/en/products/detail/3m/3365-06-300/9478336) by exposing the strands and trimming all but one. The idea is to have a very delicate connection to the Mode1 pad so that if it gets pulled out it will not damage the PCB traces.
 
-![Mode1 Pin Jumper](img/Alveo_U25_Mode1_Jumper_Conversion.jpg)
+![Mode1 Jumper Mod Parts](img/U25_Mode1_Jumper_Mod-Parts.jpg)
 
-I can now connect the Mode1 pin to GND to boot the U25 in JTAG Mode which allows programming the QSPI Flash memory.
+This is a very delicate modification but I managed to replace the 0201-size 0-ohm resistor with a 0402-size 10k-ohm resistor and then solder the single conductor of 0.050" 7-strand ribbon cable wire to the Mode1 side of the resistor.
 
-![Connect Mode1 to GND to JTAG Boot](img/Alveo_U25_Mode1_Jumper_Usage2.jpg)
+![Mode1 Jumper Mod](img/U25_Mode1_Jumper_Mod-Mode1_Connection.jpg)
 
-![Connect Mode1 to GND to JTAG Boot](img/Alveo_U25_Mode1_Jumper_Usage.jpg)
+I used the J15 (NO_FLASH) jumper footprint to mount the 4-pin 2mm header. One of the J15 pads has a 10k-ohm resistor to GND. I soldered one of the header legs to it. The other I soldered the Mode1 wire.
+
+![Mode1 Jumper Mod Header](img/U25_Mode1_Jumper_Mod-Jumper.jpg)
+
+I can now short the Mode1 pin to GND using a [2mm jumper](https://www.digikey.com/en/products/detail/sullins-connector-solutions/SPN02SYBN-RC/927356) to boot the U25 in JTAG Mode which allows programming the QSPI Flash memory.
+
+![Mode1 Jumper Mod JTAG Active](U25_Mode1_Jumper_Mod-JTAG_Active.jpg)
+
+Without the jumper, QSPI boot is active.
+
+![Mode1 Jumper Mod QSPI Active](img/U25_Mode1_Jumper_Mod-QSPI_Boot_and_Debug.jpg)
 
 
 
