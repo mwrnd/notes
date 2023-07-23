@@ -438,11 +438,11 @@ sudo apt-get install i2c-tools
 
 ![Debug Connector I2C Using MCP2221](img/U25_Debug_Connector_I2C_Using_MCP2221.jpg)
 
-On my system the MCP2221 showed up as I2C bus `5`. Use [`i2c-detect`](https://manpages.debian.org/unstable/i2c-tools/i2cdetect.8.en.html) to scan all 7-bit I2C addresses. `0x4D` and `0x4E` are the [TMP411](https://www.ti.com/product/TMP411) temperature sensors [found earlier](#tracing-i2c-signals).
+On my system the MCP2221 showed up as I2C bus `5`. Use [`i2cdetect`](https://manpages.debian.org/unstable/i2c-tools/i2cdetect.8.en.html) to scan all 7-bit I2C addresses. `0x4D` and `0x4E` are the [TMP411](https://www.ti.com/product/TMP411) temperature sensors [found earlier](#tracing-i2c-signals).
 ```
 lsusb | grep Microchip
-sudo i2c-detect -l | grep MCP2221
-sudo i2c-detect -r 5 0x03 0x77
+sudo i2cdetect -l | grep MCP2221
+sudo i2cdetect -r 5 0x03 0x77
 ```
 
 ![I2C Scan](img/U25_Debug_Connector_I2C_Scan.png)

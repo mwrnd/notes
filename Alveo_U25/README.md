@@ -233,13 +233,23 @@ readback_hw_device [current_hw_device]  -readback_file zu19eg_u25_r.rbd  -bin_fi
 
 [XRT Documentation](https://xilinx.github.io/XRT/2020.2/html/platforms_partitions.html#single-stage-platforms)
 
-[Flashing Shell to U25](https://support.xilinx.com/s/question/0D52E00006hpYjRSAU/flashing-shell-to-u25?language=en_US)
+[XRT Dual-Stage Platform](https://xilinx.github.io/XRT/master/html/platforms_partitions.html#two-stage-platforms) - U25 second stage is included in the [U25 FPGA Utility](https://support.lenovo.com/us/en/downloads/ds547996-xilinx-u25-fpga-utility-for-unknown-os) ([2.8.372](https://download.lenovo.com/servers/mig/2020/12/23/43128/xlnx-lnvgy_utl_nic_u25-2.8.372_linux_x86-64.tgz)) package. Base stage is not public.
+
+[Flashing Shell to U25N](https://xilinx.github.io/U25N-SmartNIC-Solution/docs/build/html/docs/ug1534-shellprogramming.html)
+
+[Flashing Shell to U25 Support Forum Post](https://support.xilinx.com/s/question/0D52E00006hpYjRSAU/flashing-shell-to-u25?language=en_US)
 
 [Alveo Platform Partitions](https://xilinx.github.io/XRT/master/html/platforms_partitions.html)
 
 [Alveo U25 Member Page](https://www.xilinx.com/member/u25.html)
 
 [U25 Xilinx Lenovo Page](https://www.xilinx.com/products/boards-and-kits/alveo/oem-partner/lenovo-servers.html) has a [Production Package](https://www.xilinx.com/content/dam/xilinx/publications/products/board-kits/u25_production_package_nov20.zip) and a [Utilities Package](https://www.xilinx.com/content/dam/xilinx/support/download/lenovo/xn-200528-ls-3-x2522-25g-u25-lenovo-linux-utilities-rpm-64-bit.zip)
+
+[U25 X2 NIC Driver](https://support.lenovo.com/us/en/downloads/ds547997-xilinx-u25-x2-nic-driver-for-unknown-os) ([4.15.10.1003](https://download.lenovo.com/servers/mig/2020/12/23/43129/xlnx-lnvgy_dd_nic_u25-4.15.10.1003_linux_x86-64.tgz))
+
+[U25 X2 NIC Firmware](https://support.lenovo.com/us/en/downloads/ds548057-xilinx-u25-x2-nic-firmware-for-unknown-os) ([8.1.3.1011-1](https://download.lenovo.com/servers/mig/2021/01/06/43174/xlnx-lnvgy_fw_nic_u25-8.1.3.1011-1_linux_x86-64.tgz))
+
+[U25 FPGA Utility](https://support.lenovo.com/us/en/downloads/ds547996-xilinx-u25-fpga-utility-for-unknown-os) ([2.8.372](https://download.lenovo.com/servers/mig/2020/12/23/43128/xlnx-lnvgy_utl_nic_u25-2.8.372_linux_x86-64.tgz))
 
 [U25 Cloud Instance](https://vmaccel.com/xilinxtrial/)
 
