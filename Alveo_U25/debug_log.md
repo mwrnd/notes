@@ -1,5 +1,7 @@
 **Work-In-Progress**
 
+**These notes have moved to [https://github.com/mwrnd/alveo_u25_notes](https://github.com/mwrnd/alveo_u25_notes/debug_log.md).**
+
 # Alveo U25 Debug Log
 
 See also the [Vitis Debug Log](debug_log_vitis.md).

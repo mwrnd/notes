@@ -1,5 +1,7 @@
 **Work-In-Progress**
 
+**These notes have moved to [https://github.com/mwrnd/alveo_u25_notes](https://github.com/mwrnd/alveo_u25_notes/debug_log_vitis.md).**
+
 # Alveo U25 Vitis Debug Log
 
 Notes for creating a [Vitis](https://www.xilinx.com/products/design-tools/vitis/vitis-platform.html) demo for the U25.

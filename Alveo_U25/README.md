@@ -1,5 +1,7 @@
 **Work-In-Progress**
 
+**These notes have moved to [https://github.com/mwrnd/alveo_u25_notes](https://github.com/mwrnd/alveo_u25_notes).**
+
 # Alveo U25 Setup and Usage Notes
 
 Currently focused on trying to [debug a faulty Alveo U25](debug_log.md).
