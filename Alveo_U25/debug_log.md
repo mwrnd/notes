@@ -1,6 +1,6 @@
 **Work-In-Progress**
 
-**These notes have moved to [https://github.com/mwrnd/alveo_u25_notes](https://github.com/mwrnd/alveo_u25_notes/debug_log.md).**
+**These notes have moved to [https://github.com/mwrnd/alveo_u25_notes](https://github.com/mwrnd/alveo_u25_notes/blob/main/debug_log.md).**
 
 # Alveo U25 Debug Log
 
@@ -17,7 +17,7 @@ For testing, I have the U25 in a [PCIe x16 to x1 Riser Extender](https://www.goo
 
 Initial work was done by *astronomy8* and *victhor393* on the [ServeTheHome Forums](https://forums.servethehome.com/index.php?threads/identifying-some-curious-xilinx-solarflare-cards.35111/). The official [Alveo Programming Cable and Adapter User Guide](https://www.xilinx.com/content/dam/xilinx/support/documents/boards_and_kits/accelerator-cards/ug1377-alveo-programming-cable-user-guide.pdf) is useless.
 
-I am not willing to agree to the [Alveo U25 Member Page](https://www.xilinx.com/member/u25.html) terms which state you are not allowed to discuss the U25 so I am stuck figuring out how to make the board usable. I just want to be able to use the FPGA as I see fit.
+The [Alveo U25 Member Page](https://www.xilinx.com/member/u25.html) has terms which require you to not discuss the U25 so I am attempting to figure the board out.
 
 I began by taking pictures and annotating Config, Reset, and Status pins with pinouts from the [ug1075 Zynq Ultrascale+ Packaging and Pinouts](https://docs.xilinx.com/v/u/en-US/ug1075-zynq-ultrascale-pkg-pinout) guide. Luckily the board was designed with exposed vias for testing.
 
