@@ -352,9 +352,13 @@ When you are finished assigning pins to signals, *File->Constraints->Save*.
 
 ## Create HDL Wrapper
 
-In the Sources tab, right-click on the Block Design file and select [*Create HDL Wrapper*](https://docs.xilinx.com/r/en-US/ug995-vivado-ip-subsystems-tutorial/Step-9-Creating-and-Implementing-the-Top-Level-Design).
+In the Sources tab:
 
 ![Design Sources Block Diagram](img/Design_Sources_Block_Diagram.png)
+
+Right-click on the Block Design file and select [*Create HDL Wrapper*](https://docs.xilinx.com/r/en-US/ug995-vivado-ip-subsystems-tutorial/Step-9-Creating-and-Implementing-the-Top-Level-Design):
+
+![Create HDL Wrapper](img/Create_HDL_Wrapper.png)
 
 Allow Vivado to create and manage the HDL Wrapper. This is the top-level HDL file associated with the design and must be included in every project.
 
@@ -372,7 +376,11 @@ Click *Generate Bitstream* which will Synthesize and Implement the Block design.
 
 ![Generate Bitstream for Synthesis and Implementation](img/Generate_Bitstream_Synthesis_Implementation.png)
 
-After the Bitstream is successfully generated, *Write Configuration Memory File*. Select *bin*, *mt25qu512_x1_x2_x4_x8*, *SPIx8*, *Load bitstream files*, and a location and name for the output binary files. The bitstream will end up, for example, in the `DESIGN_NAME/DESIGN_NAME.runs/impl_1` subdirectory as `SOMETHING.bit`. Vivado will add the `_primary.bin` and `_secondary.bin` extensions as the Innova-2 uses dual MT25QU512 FLASH ICs in x8 for high speed programming.
+After the Bitstream is successfully generated, *Write Configuration Memory File*.
+
+![Generate Configuration Memory File](img/Vivado_Tools_Generate_Memory_Configuration_File.png)
+
+Select *bin*, *mt25qu512_x1_x2_x4_x8*, *SPIx8*, *Load bitstream files*, and a location and name for the output binary files. The bitstream will end up, for example, in the `DESIGN_NAME/DESIGN_NAME.runs/impl_1` subdirectory as `SOMETHING.bit`. Vivado will add the `_primary.bin` and `_secondary.bin` extensions as the Innova-2 uses dual MT25QU512 FLASH ICs in x8 for high speed programming.
 
 ![Write Configuration Memory File](img/Write_Configuration_Memory_File.png)
 
