@@ -207,7 +207,7 @@ Connect the DDR4 Calibration Complete signal (*c0_init_calib_complete*) to the C
 
 ![Concat init_calib_complete](img/Concat_init_calib_complete.png)
 
-Connect the GPIO Block (*S_AXI*) to the SmartConnect Block (*M01_AXI*). Use SmartConnect *aclk1* for *axi_aclk* and SmartConnect *aresetn* for *axi_aresetn*.
+Connect the GPIO Block (*S_AXI*) to the SmartConnect Block (*M01_AXI*). Use SmartConnect *aclk* for *axi_aclk* and SmartConnect *aresetn* for *s_axi_aresetn*.
 
 ![Connect GPIO Input to SmartConnect](img/Connect_GPIO_Input_to_SmartConnect.png)
 
@@ -372,7 +372,7 @@ Click *Generate Bitstream* which will Synthesize and Implement the Block design.
 
 ![Generate Bitstream for Synthesis and Implementation](img/Generate_Bitstream_Synthesis_Implementation.png)
 
-After the Bitstream is successfully generated, *Write Configutation Memory File*. Select *bin*, *mt25qu512_x1_x2_x4_x8*, *SPIx8*, *Load bitstream files*, and a location and name for the output binary files. The bitstream will end up, for example, in the `DESIGN_NAME/DESIGN_NAME.runs/impl_1` subdirectory as `SOMETHING.bit`. Vivado will add the `_primary.bin` and `_secondary.bin` extensions as the Innova-2 uses dual MT25QU512 FLASH ICs in x8 for high speed programming.
+After the Bitstream is successfully generated, *Write Configuration Memory File*. Select *bin*, *mt25qu512_x1_x2_x4_x8*, *SPIx8*, *Load bitstream files*, and a location and name for the output binary files. The bitstream will end up, for example, in the `DESIGN_NAME/DESIGN_NAME.runs/impl_1` subdirectory as `SOMETHING.bit`. Vivado will add the `_primary.bin` and `_secondary.bin` extensions as the Innova-2 uses dual MT25QU512 FLASH ICs in x8 for high speed programming.
 
 ![Write Configuration Memory File](img/Write_Configuration_Memory_File.png)
 
