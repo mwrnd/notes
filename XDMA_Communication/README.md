@@ -112,11 +112,11 @@ uint64_t address = 0x40010000 - XDMA_PCIe_to_AXI_Translation_Offset;
 uint32_t data_word = 0xAA55A55A;
 ssize_t rc;
 
-rc = pread(xdma_userfd, &data_word, 4, address);
+rc = pwrite(xdma_userfd, &data_word, 4, address);
 
 data_word = 0;
 
-rc = pwrite(xdma_userfd, &data_word, 4, address);
+rc = pread(xdma_userfd, &data_word, 4, address);
 
 printf("AXILite Address 0x%08lX has data: 0x%08X\n", address, data_word);
 ```
@@ -126,7 +126,7 @@ printf("AXILite Address 0x%08lX has data: 0x%08X\n", address, data_word);
 
 ### AXI4-Stream
 
-**AXI4-Stream** is designed for continuous throughput. Multiples of the `tdata` width of data (64-Bits for this demo) needs to be read from (C2H) or written to (H2C) the XDMA Block. If twice as much data is sent than received, reads will be 64-bits and writes will be 128-bits. Data is sent and received to address `0` as it is not stored. The data stream sinks into **S_AXIS_C2H_** and flows from **M_AXIS_H2C_** interfaces.
+**AXI4-Stream** is designed for continuous throughput. Multiples of the `tdata` width of data (64-Bits for this demo) needs to be read from (C2H) or written to (H2C) the XDMA Block. If twice as much data is sent than received, reads will be 64-bits and writes will be 128-bits. Data is sent and received to address `0` as it is not stored. The data stream sinks into **S_AXIS_C2H_** and flows from **M_AXIS_H2C_** interfaces. Refer to the [xdma_stream](https://github.com/mwrnd/innova2_experiments/tree/main/xdma_stream) and [xdma_stream_512bit](https://github.com/mwrnd/innova2_experiments/tree/main/xdma_stream_512bit) projects for demonstrations.
 
 ![XDMA Stream Block](img/XDMA_Stream_xdma_0_Block.png)
 
@@ -223,15 +223,15 @@ Double-click the `xdma_0` Block to open it up for customization.
 
 ![XDMA Block Properties](img/XDMA_Block_Properties.png)
 
-The *PCIe Block Location* chosen should be the closest PCIE Block adjacent to the transceiver Quad that the PCIe lanes are connected to on your FPGA board. The PCIe Lane Width and Link Speed throughput needs to match the AXI Data Width and Clock Frequency throughput. These four settings are interelated. Note the Data Width is 64-Bit with these selections.
+The *PCIe Block Location* chosen should be the closest PCIE Block adjacent to the transceiver Quad that the PCIe lanes are connected to on your FPGA board. The PCIe Lane Width and Link Speed throughput needs to match the AXI Data Width and Clock Frequency throughput. These four settings are interrelated. Note the Data Width is 64-Bit with these selections.
 
 ![FPGA Banks](img/FPGA_Banks.png)
 
-A *PCIe to AXI Translation* offset is useful when the *Size* of your AXI Lite BAR cannot overlap peripheral blocks which have higher value addresses as required by other AXI blocks such as soft-core processors. The offset can be `0`.
+A *PCIe to AXI Translation* offset is useful to make sure the *Size* of your AXI Lite BAR overlaps the address space of all peripheral blocks. This is useful when a soft-core processor has all of its peripherals in some specific address range. The offset can be `0`.
 
 ![AXI Lite BAR Setup](img/XDMA_Block_Properties_AXILite_BAR_Setup.png)
 
-The XDMA Driver will create a `/dev/xdma0_?` file for each channel. Multiple channels allow multiple programs or threads to access the AXI blocks in your design.
+The XDMA Driver will create a `/dev/xdma0_?` file for each channel. Multiple channels allow multiple programs or threads to access the AXI blocks in your design. For AXI4-Stream designs, each channel has its own circuit.
 
 ![Memory Mapped DMA Channels](img/XDMA_Block_Properties_DMA_Channels.png)
 
@@ -261,17 +261,19 @@ Add blocks for each SmartConnect interface:
 
 ![BRAM Controller Block for each SmartConnectInterface](img/BRAM_Controller_Blocks_for_each_SmartConnect_Interface.png)
 
+Run Block Automation and choose to generate a new Block Memory for each (*New Blk_Mem_Gen*):
+
 ![AXI BRAM Controller New Blk_Mem_Gen](img/AXI_BRAM_Controller_Block_Automation.png)
 
-Run Block Automation and choose to generate a new Block Memory for each (*New Blk_Mem_Gen*):
+A [Memory Generator Block](https://docs.xilinx.com/v/u/en-US/pg058-blk-mem-gen) should appear for each BRAM Controller.
 
 ![Block Memory Generator for each BRAM Controller](img/Block_Memory_Generator_Blocks_for_each_BRAM_Controller.png)
 
-Double-click the `axi_bram_ctrl_` block connected to the PCIe **M_AXI** interface and choose 64-Bit as the Data Width. This matches the AXI Data Width of the `xdma_0` block. The Number of BRAM interfaces is set to 1 to simplify the design.
+Double-click the `axi_bram_ctrl_0` block connected to the PCIe **M_AXI** interface and choose 64-Bit as the Data Width. This matches the AXI Data Width of the `xdma_0` block. The Number of BRAM interfaces is set to 1 to simplify the design.
 
 ![M_AXI BRAM Controller Data Width is 64-Bit](img/AXI_BRAM_Controller_Block_Properties_AXI_64Bit.png)
 
-Double-click the `axi_bram_ctrl_` block connected to the PCIe **M_AXI_LITE** interface and choose *AXI4LITE* as the AXI Protocol which forces the Data Width to 32-Bit.
+Double-click the `axi_bram_ctrl_1` block connected to the PCIe **M_AXI_LITE** interface and choose *AXI4LITE* as the AXI Protocol which forces the Data Width to 32-Bit.
 
 ![M_AXI_LITE BRAM Controller Protocol is AXI4LITE](img/AXI_BRAM_Controller_Block_Properties_AXILite.png)
 
