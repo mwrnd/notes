@@ -109,6 +109,7 @@ The following is some minimal C code without error checking. Note `count=4` is f
 // Open M_AXI_LITE Device as Read-Write
 int xdma_userfd = open("/dev/xdma0_user", O_RDWR);
 
+#define XDMA_PCIe_to_AXI_Translation_Offset 0x40000000
 uint64_t address = 0x40010000 - XDMA_PCIe_to_AXI_Translation_Offset;
 uint32_t data_word = 0xAA55A55A;
 ssize_t rc;
@@ -146,7 +147,7 @@ sudo ./mm_axilite_test
 
 For the simple included demo, [`xdma_stream.tcl`](xdma_stream.tcl), twice as much data is sent than received. The design can be [recreated for other FPGA targets](#recreating-a-project-from-a-tcl-file). [Configuration bitstreams are available](https://github.com/mwrnd/notes/releases/v0.1.0/) for the [Innova-2](https://github.com/mwrnd/innova2_flex_xcku15p_notes).
 
-Each pair of input (H2C) floating-point values is multiplied to an output (C2H) floating-point value. To account for FIFOs built into the AXI4-Stream blocks, 16 floats (64-bytes) are sent and 8 are received. Data is sent and received to address `0` as it is a stream. The data stream sinks into **S_AXIS_C2H_?** and flows from **M_AXIS_H2C_?** interfaces. Refer to the [xdma_stream](https://github.com/mwrnd/innova2_experiments/tree/main/xdma_stream) and [xdma_stream_512bit](https://github.com/mwrnd/innova2_experiments/tree/main/xdma_stream_512bit) projects for demonstrations.
+Each pair of input (H2C) floating-point values is multiplied to an output (C2H) floating-point value. To account for FIFOs built into the AXI4-Stream blocks, 16 floats (64-bytes) are sent and 8 are received. Data is sent and received to address `0` as it is a stream. The data stream sinks into **S_AXIS_C2H_?** and flows from **M_AXIS_H2C_?** interfaces. Refer to the [xdma_stream](https://github.com/mwrnd/innova2_experiments/tree/main/xdma_stream) and [xdma_stream_512bit](https://github.com/mwrnd/innova2_experiments/tree/main/xdma_stream_512bit) projects for more complex demonstrations.
 
 ![XDMA Stream Demo Block Diagram](img/XDMA_Stream_Demo_Block_Diagram.png)
 
@@ -235,7 +236,7 @@ Add IP Blocks:
 
 #### Add XDMA Block
 
-Add XDMA Block:
+Add an XDMA Block:
 
 ![Add XDMA Block](img/Add_DMA_Bridge_Subsystem_for_PCI_Express_IP.png)
 
@@ -243,7 +244,7 @@ Run Block Automation:
 
 ![Run Block Automation](img/Run_Block_Automation.png)
 
-Choose PCIe Lane Width and Link Speed, select **AXI Memory Mapped** for the *DMA interface* and add an AXI Lite interface.
+Choose PCIe Lane Width and Link Speed compatible with your target board. Select **AXI Memory Mapped** for the *DMA interface* and add an AXI Lite interface.
 
 ![XDMA AXI Memory Mapped with AXI Lite](img/XDMA_Block_Automation_MM_and_AXILite.png)
 
@@ -255,17 +256,17 @@ Double-click the `xdma_0` Block to open it up for customization.
 
 ![XDMA Block Properties](img/XDMA_Block_Properties.png)
 
-The *PCIe Block Location* chosen should be the closest PCIE Block adjacent to the transceiver Quad that the PCIe lanes are connected to on your FPGA board. Refer to the [Device Packaging and Pinouts Product Specification User Guide](https://docs.xilinx.com/r/en-US/ug575-ultrascale-pkg-pinout/XCKU15P-and-XQKU15P-Bank-Diagrams). The PCIe Lane Width and Link Speed throughput needs to match the AXI Data Width and Clock Frequency throughput. These four settings are interrelated. Note the Data Width is 64-Bit with these selections.
+The *PCIe Block Location* chosen should be the closest PCIE Block adjacent to the transceiver Quad that the PCIe lanes are connected to on your FPGA board. Refer to the [Device Packaging and Pinouts Product Specification User Guide](https://docs.xilinx.com/r/en-US/ug575-ultrascale-pkg-pinout/XCKU15P-and-XQKU15P-Bank-Diagrams).
 
 ![FPGA Banks](img/FPGA_Banks.png)
-
-A *PCIe to AXI Translation* offset is useful to make sure the *Size* of your AXI Lite BAR overlaps the address space of all peripheral blocks. This is useful when a soft-core processor has all of its peripherals in some specific address range. The offset can be `0` or [larger than *Size*](https://support.xilinx.com/s/question/0D52E00006hpbPJSAY/pcie-to-axi-translation-setting-for-dma-bypass-interface-not-being-applied?language=en_US).
-
-![AXI Lite BAR Setup](img/XDMA_Block_Properties_AXILite_BAR_Setup.png)
 
 Set the PCIe ID to **Memory Controller** as the *Base Class* and **Other memory controller** as the *Sub Class*.
 
 ![PCIe ID Settings](img/XDMA_Settings_PCIe_ID.png)
+
+A *PCIe to AXI Translation* offset is useful to make sure the *Size* of your AXI Lite BAR overlaps the address space of all peripheral blocks. This is useful when a soft-core processor has all of its peripherals in some specific address range. The offset can be `0` or [larger than *Size*](https://support.xilinx.com/s/question/0D52E00006hpbPJSAY/pcie-to-axi-translation-setting-for-dma-bypass-interface-not-being-applied?language=en_US): `1MB==1048576==0x100000 < 0x40000000`.
+
+![AXI Lite BAR Setup](img/XDMA_Block_Properties_AXILite_BAR_Setup.png)
 
 The XDMA Driver will create a `/dev/xdma0_?` file for each channel. Multiple channels allow multiple programs or threads to access the AXI blocks in your design.
 
@@ -293,7 +294,7 @@ Add AXI BRAM Controller:
 
 ![Add AXI BRAM Controller](img/Add_AXI_BRAM_Controller_IP.png)
 
-Add blocks for each SmartConnect interface:
+Add blocks for each SmartConnect interface and connect their `S_AXIS` ports to the corresponding `M_AXIS` port of the SmartConnect blocks.
 
 ![BRAM Controller Block for each SmartConnectInterface](img/BRAM_Controller_Blocks_for_each_SmartConnect_Interface.png)
 
@@ -301,7 +302,7 @@ Run Block Automation and choose to generate a new Block Memory for each (*New Bl
 
 ![AXI BRAM Controller New Blk_Mem_Gen](img/AXI_BRAM_Controller_Block_Automation.png)
 
-A [Memory Generator Block](https://docs.xilinx.com/v/u/en-US/pg058-blk-mem-gen) should appear for each BRAM Controller.
+A [Block Memory Generator](https://docs.xilinx.com/v/u/en-US/pg058-blk-mem-gen) should appear for each BRAM Controller.
 
 ![Block Memory Generator for each BRAM Controller](img/Block_Memory_Generator_Blocks_for_each_BRAM_Controller.png)
 
@@ -309,7 +310,7 @@ Double-click the `axi_bram_ctrl_0` block connected to the PCIe **M_AXI** interfa
 
 ![M_AXI BRAM Controller Data Width is 64-Bit](img/AXI_BRAM_Controller_Block_Properties_AXI_64Bit.png)
 
-Double-click the `axi_bram_ctrl_1` block connected to the PCIe **M_AXI_LITE** interface and choose *AXI4LITE* as the AXI Protocol which forces the Data Width to 32-Bit.
+Double-click the `axi_bram_ctrl_1` block connected to the PCIe **M_AXI_LITE** interface and choose *AXI4LITE* as the AXI Protocol which forces the Data Width to 32-Bit. The Number of BRAM interfaces is set to 1 to simplify the design.
 
 ![M_AXI_LITE BRAM Controller Protocol is AXI4LITE](img/AXI_BRAM_Controller_Block_Properties_AXILite.png)
 
@@ -327,7 +328,7 @@ Open the *Address Editor* tab, right-click and select *Assign All*:
 
 ![Address Editor Assign All](img/Address_Editor_Assign_All.png)
 
-You can edit the AXI Block addresses as required. Even though each Network can have overlapping addresses, avoid this as it can lead to confusion.
+You can edit the AXI Block addresses as required. The *Range* is the size that Vivado will implement for each block. If the value is too large for your target FPGA then Implementation will fail. Even though each Network can have overlapping addresses, avoid this as it can lead to confusion.
 
 ![AXI Addresses](img/Address_Editor.png)
 
@@ -350,7 +351,11 @@ Name the Constraints File:
 
 ![Name the Constraints File](img/Create_Constraints_File.png)
 
-Double-click the `constraints.xdc` file to edit it. You will need to edit the PCIe TX/RX, Reset, and Clock signals to your board's pins. The TX/RX and Clock signals are differential but only the positive terminals need to be set as that restricts the other terminal. `CONFIG_MODE` and other `BITSTREAM` settings may also need to be set for your target board.
+Double-click the `constraints.xdc` file to edit it.
+
+![Constraints File](img/Constraints_File.png)
+
+You will need to edit the PCIe TX/RX, Reset, and Clock signals to your board's pins. The TX/RX and Clock signals are differential but only the positive terminals need to be set as that restricts the other terminal. `CONFIG_MODE` and other `BITSTREAM` settings may also need to be set for your target board.
 ```
 set_property PACKAGE_PIN AH36 [get_ports {pcie_7x_mgt_rtl_0_rxp[0]}]
 
@@ -426,7 +431,7 @@ Add IP Blocks:
 
 #### Add XDMA Stream Block
 
-Add XDMA Block:
+Add an XDMA Block:
 
 ![Add XDMA Block](img/Add_DMA_Bridge_Subsystem_for_PCI_Express_IP.png)
 
@@ -446,19 +451,19 @@ Double-click the `xdma_0` Block to open it up for customization.
 
 ![XDMA Block Properties](img/XDMA_Block_Properties_Stream.png)
 
-The *PCIe Block Location* chosen should be the closest PCIE Block adjacent to the transceiver Quad that the PCIe lanes are connected to on your FPGA board. Refer to the [Device Packaging and Pinouts Product Specification User Guide](https://docs.xilinx.com/r/en-US/ug575-ultrascale-pkg-pinout/XCKU15P-and-XQKU15P-Bank-Diagrams). The PCIe Lane Width and Link Speed throughput needs to match the AXI Data Width and Clock Frequency throughput. These four settings are interrelated. Note the Data Width is 64-Bit with these selections.
+The *PCIe Block Location* chosen should be the closest PCIE Block adjacent to the transceiver Quad that the PCIe lanes are connected to on your FPGA board. Refer to the [Device Packaging and Pinouts Product Specification User Guide](https://docs.xilinx.com/r/en-US/ug575-ultrascale-pkg-pinout/XCKU15P-and-XQKU15P-Bank-Diagrams).
 
 ![FPGA Banks](img/FPGA_Banks.png)
-
-A *PCIe to AXI Translation* offset is useful to make sure the *Size* of your AXI Lite BAR overlaps the address space of all peripheral blocks. This is useful when a soft-core processor has all of its peripherals in some specific address range. The offset can be `0` or [larger than *Size*](https://support.xilinx.com/s/question/0D52E00006hpbPJSAY/pcie-to-axi-translation-setting-for-dma-bypass-interface-not-being-applied?language=en_US).
-
-![AXI Lite BAR Setup](img/XDMA_Block_Properties_AXILite_BAR_Setup.png)
 
 Set the PCIe ID to **Memory Controller** as the *Base Class* and **Other memory controller** as the *Sub Class*.
 
 ![PCIe ID Settings](img/XDMA_Settings_PCIe_ID.png)
 
-The XDMA Driver will create a `/dev/xdma0_?` file for each channel. Each channel has its own circuit.
+A *PCIe to AXI Translation* offset is useful to make sure the *Size* of your AXI Lite BAR overlaps the address space of all peripheral blocks. This is useful when a soft-core processor has all of its peripherals in some specific address range. The offset can be `0` or [larger than *Size*](https://support.xilinx.com/s/question/0D52E00006hpbPJSAY/pcie-to-axi-translation-setting-for-dma-bypass-interface-not-being-applied?language=en_US): `1MB==1048576==0x100000 < 0x40000000`.
+
+![AXI Lite BAR Setup](img/XDMA_Block_Properties_AXILite_BAR_Setup.png)
+
+Each channel has an AXI-Stream circuit: `S_AXIS_C2H_?` or `M_AXIS_H2C_?`. The XDMA Driver will create a `/dev/xdma0_c2h_?` or `/dev/xdma0_h2c_?` file for each channel. 
 
 ![Stream DMA Channels](img/XDMA_Block_Properties_DMA_Channels.png)
 
@@ -480,13 +485,13 @@ One of the output streams is set up to be the lower 32-bits of the input and the
 
 #### Floating-Point Block
 
-Add a [Floating-Point](https://docs.xilinx.com/v/u/en-US/pg060-floating-point) block in the stream as an example of something useful. Connect its `S_AXIS` inputs to the `M??_AXIS` outputs of the *AXI4-Stream Broadcaster*. Each pair of 32-bit=4-byte single precision floating-point values in the 64-Bit=8-Byte Host-to-Card (H2C) stream gets multiplied to produce a floating-point value in the 64-Bit=8-Byte Card-to-Host (C2H) stream. Half as many reads from C2H are necessary as writes to H2C.
+Add a [Floating-Point](https://docs.xilinx.com/v/u/en-US/pg060-floating-point) block to the stream as an example of something useful. Connect its `S_AXIS` inputs to the `M??_AXIS` outputs of the *AXI4-Stream Broadcaster*. Each pair of 32-bit=4-byte single precision floating-point values in the 64-Bit=8-Byte Host-to-Card (H2C) stream gets multiplied to produce a floating-point value in the 64-Bit=8-Byte Card-to-Host (C2H) stream. Half as many reads from C2H are necessary as writes to H2C.
 
 The floating-point blocks are set up to multiply their inputs.
 
 ![Floating-Point Block Settings](img/Floating-Point_Settings.png)
 
-Full DSP usage is allowed to maximize throughput.
+Full DSP usage is set to maximize throughput.
 
 ![Floating-Point Block Optimization Settings](img/Floating-Point_Optimizations.png)
 
@@ -508,7 +513,7 @@ Set it up to convert its 32-Bit=4-Byte input into a 64-Bit=8-Byte output compati
 
 #### M_AXI_LITE Addresses
 
-Set an *M_AXI_LITE* Address for the BRAM Block.
+If you decide to [add a BRAM Block](#add-bram-controller-blocks) to the *M_AXI_LITE* port, set up its addresses.
 
 ![Set M_AXI_LITE Addresses](img/xdma_stream_AXILite_Addresses.png)
 
@@ -562,7 +567,7 @@ Select all the IP check boxes and run *Upgrade Selected*.
 
 ![Upgrade IP](img/Show_IP_Status_then_Upgrade_Selected.png)
 
-The IP should upgrade successfully if it is not too different an FPGA. Note that constraints will also need to be updated if the package has changed.
+The IP should upgrade successfully if it is not too different an FPGA.
 
 ![IP Successfully Upgraded](img/IP_Successfully_Upgraded.png)
 
@@ -583,14 +588,14 @@ Generate the Bitstream:
 
 ## Install dma_ip_drivers
 
-Download and extract the March 18, 2022, commit 7859957 version of Xilinx's [DMA IP Drivers](https://github.com/Xilinx/dma_ip_drivers/tree/785995783c78b2cbec6458141c4395e204c5bd9b).
+Download and extract the November 10, 2023, commit a93d4a4 version of Xilinx's [DMA IP Drivers](https://github.com/Xilinx/dma_ip_drivers/tree/a93d4a4870e41d152b33aebb3f869eefb11aa691).
 ```Shell
 cd ~
-wget https://codeload.github.com/Xilinx/dma_ip_drivers/zip/785995783c78b2cbec6458141c4395e204c5bd9b -O dma_ip_drivers-7859957.zip
-unzip dma_ip_drivers-7859957.zip
-mv dma_ip_drivers-785995783c78b2cbec6458141c4395e204c5bd9b dma_ip_drivers
+wget https://codeload.github.com/Xilinx/dma_ip_drivers/zip/a93d4a4870e41d152b33aebb3f869eefb11aa691 -O dma_ip_drivers-a93d4a4.zip
+unzip dma_ip_drivers-a93d4a4.zip
+mv dma_ip_drivers-a93d4a4870e41d152b33aebb3f869eefb11aa691 dma_ip_drivers
 
-cd ~/dma_ip_drivers/XDMA/linux-kernel/xdma/
+cd dma_ip_drivers/XDMA/linux-kernel/xdma/
 make DEBUG=1
 sudo make install
 
