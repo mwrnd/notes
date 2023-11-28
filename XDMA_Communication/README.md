@@ -1,6 +1,3 @@
-**Work-In-Progress**: Testing underway. PCIe 2.5GT/s x1 with a 64-Bit AXI Bus does not work for me.
-
-
 # XDMA Communication
 
 Tutorial for writing software on Linux to communicate with an [XDMA](https://docs.xilinx.com/r/en-US/pg195-pcie-dma/Introduction)-based FPGA design using [dma_ip_drivers](https://github.com/xilinx/dma_ip_drivers).
@@ -10,69 +7,90 @@ Tutorial for writing software on Linux to communicate with an [XDMA](https://doc
 
 ## QuickStart
 
-For when you already have an [XDMA FPGA design](#creating-a-memory-mapped-xdma-block-diagram-design) and [dma_ip_drivers](#install-dma_ip_drivers) installed.
+For when you already have an [XDMA FPGA design](#creating-a-memory-mapped-xdma-block-diagram-design) and [dma_ip_drivers](#install-dma_ip_drivers) installed. The simple included demo, [`xdma_mm.tcl`](xdma_mm.tcl), can be [recreated for other FPGA targets](#recreating-a-project-from-a-tcl-file). [Configuration bitstreams are available](https://github.com/mwrnd/notes/releases/v0.1.0/) for the [Innova-2](https://github.com/mwrnd/innova2_flex_xcku15p_notes).
 
-The XDMA driver creates [character device files](https://en.wikipedia.org/wiki/Device_file#Character_devices) that are [write-only and read-only](https://manpages.debian.org/bookworm/manpages-dev/open.2.en.html#File_access_mode), `/dev/xdma0_h2c_0` and `/dev/xdma0_c2h_0` respectively. They allow direct access to the FPGA design's AXI Bus. To read from an AXI Block at address `0xC0000000` you would read from address `0xC0000000` of the `/dev/xdma0_c2h_0` (Card-to-Host) file. To write you would write to the appropriate address of `/dev/xdma0_h2c_0` (Host-to-Card).
+![XDMA Memory-Mapped Demo Block Diagram](img/XDMA_Demo_Block_Diagram.png)
 
+The XDMA driver from [dma_ip_drivers](https://github.com/xilinx/dma_ip_drivers) creates [character device files](https://en.wikipedia.org/wiki/Device_file#Character_devices) for access to the AXI Bus. For DMA transfers to **M_AXI** blocks, `/dev/xdma0_h2c_0` is Write-Only and `/dev/xdma0_c2h_0` is Read-Only. For single word (32-Bit) register-like reads and writes to **M_AXI_LITE** the `/dev/xdma0_user` is Read-Write.
 
-
-
-### Memory-Mapped M_AXI
-
-The **M_AXI** interface is for Direct Memory Access (DMA) to AXI blocks as communication is via a sequence of Transaction Layer Packet (TLP) requests.
-
-![M_AXI Network](img/M_AXI_Interface.png)
-
-The [BRAM Controller Block](https://docs.xilinx.com/v/u/en-US/pg078-axi-bram-ctrl) attached to the interface has an address of `0x00000000C0000000`.
-
-![M_AXI Addresses](img/Address_Editor_M_AXI.png)
+[write-only and read-only](https://manpages.debian.org/bookworm/manpages-dev/open.2.en.html#File_access_mode), `/dev/xdma0_h2c_0` and `/dev/xdma0_c2h_0` respectively. They allow direct access to the FPGA design's AXI Bus. To read from an AXI Block at address `0xC0000000` you would read from address `0xC0000000` of the `/dev/xdma0_c2h_0` (Card-to-Host) file. To write you would write to the appropriate address of `/dev/xdma0_h2c_0` (Host-to-Card).
 
 [`pread`/`pwrite`](https://manpages.ubuntu.com/manpages/jammy/en/man2/pread.2.html) combine [`lseek`](https://manpages.ubuntu.com/manpages/jammy/en/man2/lseek.2.html) and [`read`/`write`](https://manpages.ubuntu.com/manpages/jammy/en/man2/read.2.html).
 ```C
 #include <unistd.h>
 
 ssize_t pread(int fd, void *buf, size_t count, off_t offset);
-
 ssize_t pwrite(int fd, const void *buf, size_t count, off_t offset);
 ```
 
-The following is some minimal C code without error checking.
+
+
+
+### Memory-Mapped M_AXI
+
+The **M_AXI** interface is for Direct Memory Access (DMA) to AXI blocks as communication is via Transaction Layer Packet (TLP) requests.
+
+![M_AXI Network](img/M_AXI_Interface.png)
+
+The [BRAM Controller Block](https://docs.xilinx.com/v/u/en-US/pg078-axi-bram-ctrl) attached to the interface has an address of `0xC0000000` and a size of 8KB (smallest that will consistently work).
+
+![M_AXI Addresses](img/Address_Editor_M_AXI.png)
+
+The following is some minimal C code without error checking. Observe the `buffer` is defined as an array of [32-Bit unsigned integers (`uint32_t`)](https://manpages.ubuntu.com/manpages/trusty/en/man7/stdint.h.7posix.html) and is used as such but `pread`/`pwrite` operate on bytes. `/dev/xdma0_h2c_0` is opened as Write-Only ([`O_WRONLY`](https://manpages.ubuntu.com/manpages/trusty/en/man2/open.2.html)) as reads from it will fail. `/dev/xdma0_c2h_0` is opened as Read-Only ([`O_RDONLY`](https://manpages.ubuntu.com/manpages/trusty/en/man2/open.2.html)) as writes to it will fail.
 ```C
-// Using 2^12 = 4096 byte array. Size was defined in the
-// Vivado FPGA Project Block Diagram Address Editor as the Data Range for BRAM
-#define DATA_SIZE 4096
-uint8_t buffer[DATA_SIZE];
-uint64_t address = 0x00000000C0000000;
-int xdma_h2cfd = 0;
-int xdma_c2hfd = 0;
-uint32_t val = 0;
+#define DATA_BYTES    8192
+#define DATA_WORDS    (DATA_BYTES/4)
+
+uint32_t buffer[DATA_WORDS];
+uint64_t address = 0xC0000000;
 ssize_t rc;
 
 // Fill the buffer with data
-for (int indx = 0; indx < DATA_SIZE ; indx++) { buffer[indx] = (uint8_t)indx; }
+for (int i = 0; i < DATA_WORDS; i++) { buffer[i] = (DATA_WORDS - i); }
 
-memcpy(&buffer[0], &val, 4);
-printf("Buffer First Word=0x%08X before write\n", val);
+printf("Buffer Contents before H2C write: \n");
+printf("[0]=%04d, [4]=%04d, [%d]=%04d\n",
+        (uint32_t)buffer[0], (uint32_t)buffer[4],
+        (DATA_WORDS - 3), (uint32_t)buffer[(DATA_WORDS - 3)]);
 
 // Open M_AXI H2C Host-to-Card Device as Write-Only
-xdma_h2cfd = open("/dev/xdma0_h2c_0", O_WRONLY);
+int xdma_h2cfd = open("/dev/xdma0_h2c_0", O_WRONLY);
 
-rc = pwrite(xdma_h2cfd, buffer, DATA_SIZE, address);
+// Write the full buffer to the FPGA design's BRAM
+rc = pwrite(xdma_h2cfd, buffer, DATA_BYTES, address);
 
-// Clear the buffer
-for (int indx = 0; indx < DATA_SIZE ; indx++) { buffer[indx] = 0; }
 
-memcpy(&buffer[0], &val, 4);
-printf("Buffer First Word=0x%08X after clear\n", val);
+// Clear the buffer to make sure data was read from FPGA
+printf("\nClearing buffer.\n");
+for (int i = 0; i < DATA_WORDS ; i++) { buffer[i] = 0; }
+
 
 // Open M_AXI C2H Card-to-Host Device as Read-Only
-xdma_c2hfd = open("/dev/xdma0_c2h_0", O_RDONLY);
+int xdma_c2hfd = open("/dev/xdma0_c2h_0", O_RDONLY);
 
-rc = pread(xdma_c2hfd, buffer, DATA_SIZE, address);
+// Read the full buffer from the FPGA design's BRAM
+rc = pread(xdma_c2hfd, buffer, DATA_BYTES, address);
 
-memcpy(&buffer[0], &val, 4);
-printf("AXI BRAM First Word=0x%08X\n", val);
+printf("\nBuffer Contents after C2H read: \n");
+printf("[0]=%04d, [4]=%04d, [%d]=%04d\n",
+        (uint32_t)buffer[0], (uint32_t)buffer[4],
+        (DATA_WORDS - 3), (uint32_t)buffer[(DATA_WORDS-3)]);
+
+printf("\nrc = %ld = bytes read from FPGA's BRAM\n", rc);
+
+
+close(xdma_h2cfd);
+close(xdma_c2hfd);
 ```
+
+[`mm_axi_test.c`](mm_axi_test.c) contains the above in a full C program.
+
+```
+gcc -Wall mm_axi_test.c -o mm_axi_test
+sudo ./mm_axi_test
+```
+
+![M_AXI_LITE Test Program](img/mm_axi_test_Run.png)
 
 
 
@@ -83,30 +101,18 @@ The **M_AXI_LITE** interface is useful for single word access to register-like b
 
 ![M_AXI_LITE Network](img/M_AXI_LITE_Interface.png)
 
-The [BRAM Controller Block](https://docs.xilinx.com/v/u/en-US/pg078-axi-bram-ctrl) attached to the interface has an address of `0x40010000`.
+The [BRAM Controller Block](https://docs.xilinx.com/v/u/en-US/pg078-axi-bram-ctrl) attached to the interface has an address of `0x40010000` and a size of 8KB (smallest that will consistently work).
 
 ![M_AXI_LITE Addresses](img/Address_Editor_M_AXI_LITE.png)
 
-However, the XDMA Block is set up with a PCIe to AXI Translation offset of `0x40000000` which must be subtracted from the intended AXI address. This is useful for soft-core processors as it allows the 1Megabyte *Size* of the AXI-Lite BAR (Block Address Register) to overlap all attached peripheral blocks.
+However, the XDMA Block is set up with a PCIe to AXI Translation offset of `0x40000000` which must be subtracted from the intended AXI address. This is useful for soft-core processors as it allows the 1Megabyte *Size* of the AXI-Lite BAR (Base Address Register) to overlap all attached peripheral blocks.
 
 ![M_AXI_LITE BAR Setup](img/XDMA_Block_Properties_AXILite_BAR_Setup.png)
 
-[`pread`/`pwrite`](https://manpages.ubuntu.com/manpages/jammy/en/man2/pread.2.html) combine [`lseek`](https://manpages.ubuntu.com/manpages/jammy/en/man2/lseek.2.html) and [`read`/`write`](https://manpages.ubuntu.com/manpages/jammy/en/man2/read.2.html).
+The following is some minimal C code without error checking. Note `count=4` is fixed for `pread`/`pwrite` as each `M_AXI_LITE` TLP transaction consists of a 32-bit=4-byte data word. `/dev/xdma0_user` is opened Read-Write ([`O_RDWR`](https://manpages.ubuntu.com/manpages/trusty/en/man2/open.2.html)) as it is designed for low throughput control data.
 ```C
-#include <unistd.h>
-
-ssize_t pread(int fd, void *buf, size_t count, off_t offset);
-
-ssize_t pwrite(int fd, const void *buf, size_t count, off_t offset);
-```
-
-The following is some minimal C code without error checking. Note `count=4` is fixed as each M_AXI_LITE TLP consists of a 32-bit=4-byte data word.
-```C
-// The PCIe to AXI Translation Offset for the PCIe to AXI-Lite Interface
-#define XDMA_PCIe_to_AXI_Translation_Offset 0x40000000
-
 // Open M_AXI_LITE Device as Read-Write
-xdma_userfd = open("/dev/xdma0_user", O_RDWR);
+int xdma_userfd = open("/dev/xdma0_user", O_RDWR);
 
 uint64_t address = 0x40010000 - XDMA_PCIe_to_AXI_Translation_Offset;
 uint32_t data_word = 0xAA55A55A;
@@ -118,59 +124,92 @@ data_word = 0;
 
 rc = pread(xdma_userfd, &data_word, 4, address);
 
-printf("AXILite Address 0x%08lX has data: 0x%08X\n", address, data_word);
+printf("AXILite Address 0x%08lX after offset has data: 0x%08X",
+        address, data_word);
+printf(", rc = %ld\n", rc);
+
+close(xdma_userfd);
 ```
+
+[`mm_axilite_test.c`](mm_axilite_test.c) contains the above in a full C program.
+
+```
+gcc -Wall mm_axilite_test.c -o mm_axilite_test
+sudo ./mm_axilite_test
+```
+
+![M_AXI_LITE Test Program](img/mm_axilite_test_Run.png)
 
 
 
 
 ### AXI4-Stream
 
-**AXI4-Stream** is designed for continuous throughput. Multiples of the `tdata` width of data (64-Bits for this demo) needs to be read from (C2H) or written to (H2C) the XDMA Block. If twice as much data is sent than received, reads will be 64-bits and writes will be 128-bits. Data is sent and received to address `0` as it is not stored. The data stream sinks into **S_AXIS_C2H_** and flows from **M_AXIS_H2C_** interfaces. Refer to the [xdma_stream](https://github.com/mwrnd/innova2_experiments/tree/main/xdma_stream) and [xdma_stream_512bit](https://github.com/mwrnd/innova2_experiments/tree/main/xdma_stream_512bit) projects for demonstrations.
+**AXI4-Stream** is designed for continuous throughput. Multiples of the `tdata` width of data (64-Bits for this demo) needs to be read from (C2H) or written to (H2C) the XDMA Block.
 
 ![XDMA Stream Block](img/XDMA_Stream_xdma_0_Block.png)
 
+For the simple included demo, [`xdma_stream.tcl`](xdma_stream.tcl), twice as much data is sent than received. [Configuration bitstreams are available](https://github.com/mwrnd/notes/releases/v0.1.0/) for the [Innova-2](https://github.com/mwrnd/innova2_flex_xcku15p_notes). Each pair of floating-point values is multiplied to an output floating-point value. To account for FIFOs built into the AXI4-Stream blocks, 16 floats are sent and 8 are received. Data is sent and received to address `0` as it is not stored. The data stream sinks into **S_AXIS_C2H_?** and flows from **M_AXIS_H2C_?** interfaces. Refer to the [xdma_stream](https://github.com/mwrnd/innova2_experiments/tree/main/xdma_stream) and [xdma_stream_512bit](https://github.com/mwrnd/innova2_experiments/tree/main/xdma_stream_512bit) projects for demonstrations.
+
+![XDMA Stream Demo Block Diagram](img/XDMA_Stream_Demo_Block_Diagram.png)
+
 ```C
-// The AXI Data Width is 64-Bit=8-Byte. Data Size must be a multiple.
-// The design takes 2 float values, multiples them, then outputs 1 float
-// In order to read two 32-bit float values (64-Bit), 128-bits must be sent
-#define DATA_SIZE 16
+#define DATA_SIZE 64
+#define H2C_FLOAT_COUNT (DATA_SIZE / 4)
+#define C2H_FLOAT_COUNT (H2C_FLOAT_COUNT / 2)
 
-int xdma_h2cfd = 0;
-int xdma_c2hfd = 0;
-uint8_t buffer[DATA_SIZE];
-float f1 = 1.23;
-float f2 = 3.21;
-float f3 = 3.14;
-float f4 = 4.13;
-ssize_t rc;
+float h2c_data[H2C_FLOAT_COUNT];
+float c2h_data[C2H_FLOAT_COUNT];
+ssize_t rc = 0;
 
-// Open M_AXI H2C Host-to-Card Device as Write-Only
-xdma_h2cfd = open("/dev/xdma0_h2c_0", O_WRONLY);
+int xdma_fd_wrte = open("/dev/xdma0_h2c_0", O_WRONLY);
+int xdma_fd_read = open("/dev/xdma0_c2h_0", O_RDONLY);
 
-// Open M_AXI C2H Card-to-Host Device as Read-Only
-xdma_c2hfd = open("/dev/xdma0_c2h_0", O_RDONLY);
+printf("H2C_FLOAT_COUNT = %d, C2H_FLOAT_COUNT = %d\n",
+        H2C_FLOAT_COUNT, C2H_FLOAT_COUNT);
 
-// fill the buffer with 4 floating-point values
-memcpy(&buffer[0],  &f1, 4);
-memcpy(&buffer[4],  &f2, 4);
-memcpy(&buffer[8],  &f3, 4);
-memcpy(&buffer[12], &f4, 4);
+// fill the write data buffer with floating point values
+for (int i = 0; i < H2C_FLOAT_COUNT; i++) { h2c_data[i]=(3.14*(i+1)); }
 
-printf("f1=%f, f2=%f, f1*f2=%f,  f3=%f, f4=%f, f3*f4=%f\n",
-    f1, f2, (f1*f2), f3, f4, (f3*f4));
 
-// Write the 4 float values to the AXI-Stream interface - 128-Bits = 2*64-Bit
-rc = pwrite(xdma_h2cfd, buffer, DATA_SIZE, 0);
+// write data buffer to the AXI Stream - a float is 4-bytes
+rc = pwrite(xdma_fd_wrte, h2c_data, (H2C_FLOAT_COUNT * 4), 0);
+printf("Write returned rc = %ld = number of bytes sent\n", rc);
 
-// Read the resulting 2 float values from the AXI-Stream interface - 64-Bits
-rc = pread(xdma_c2hfd, buffer, (DATA_SIZE/2), 0);
+// read data from the AXI Stream into buffer - a float is 4-bytes
+rc = pread (xdma_fd_read, c2h_data, (C2H_FLOAT_COUNT * 4), 0);
+printf("Read  returned rc = %ld = number of bytes received\n", rc);
 
-memcpy(&f1, &buffer[0], 4);
-memcpy(&f2, &buffer[4], 4);
 
-printf("f1*f2=%f, f3*f4=%f\n", f1, f2);
+// print the data in the return data (C2H) buffer
+uint32_t j = 0;
+float expected = 0;
+printf("\n");
+for (int i = 0 ; i < H2C_FLOAT_COUNT; i=i+2)
+{
+
+    j = floor((i / 2));
+    printf("%-2d, %-2d, h2c[%02d]*[%02d]=c2h[%02d] = %f*%f = %f",
+            i, j, i, (i+1), j, h2c_data[i], h2c_data[(i+1)], c2h_data[j]);
+    if (fabs((h2c_data[i] * h2c_data[(i+1)]) - c2h_data[j]) > 0.01)
+    {
+        expected = (h2c_data[i] * h2c_data[(i+1)]);
+        printf(" -- ERROR, was expecting %f", expected);
+    }
+    printf("\n");
+}
+
+close(xdma_fd_wrte);
+close(xdma_fd_read);
 ```
+
+[`stream_test.c`](stream_test.c) contains the above in a full C program.
+```
+gcc -Wall stream_test.c -o stream_test -lm
+sudo ./stream_test
+```
+
+![AXI-Stream Test Program](img/stream_test_c_Run.png)
 
 
 
@@ -223,13 +262,17 @@ Double-click the `xdma_0` Block to open it up for customization.
 
 ![XDMA Block Properties](img/XDMA_Block_Properties.png)
 
-The *PCIe Block Location* chosen should be the closest PCIE Block adjacent to the transceiver Quad that the PCIe lanes are connected to on your FPGA board. The PCIe Lane Width and Link Speed throughput needs to match the AXI Data Width and Clock Frequency throughput. These four settings are interrelated. Note the Data Width is 64-Bit with these selections.
+The *PCIe Block Location* chosen should be the closest PCIE Block adjacent to the transceiver Quad that the PCIe lanes are connected to on your FPGA board. Refer to the [Device Packaging and Pinouts Product Specification User Guide](https://docs.xilinx.com/r/en-US/ug575-ultrascale-pkg-pinout/XCKU15P-and-XQKU15P-Bank-Diagrams). The PCIe Lane Width and Link Speed throughput needs to match the AXI Data Width and Clock Frequency throughput. These four settings are interrelated. Note the Data Width is 64-Bit with these selections.
 
 ![FPGA Banks](img/FPGA_Banks.png)
 
 A *PCIe to AXI Translation* offset is useful to make sure the *Size* of your AXI Lite BAR overlaps the address space of all peripheral blocks. This is useful when a soft-core processor has all of its peripherals in some specific address range. The offset can be `0`.
 
 ![AXI Lite BAR Setup](img/XDMA_Block_Properties_AXILite_BAR_Setup.png)
+
+Set the PCIe ID to **Memory Controller** as the *Base Class* and **Other memory controller** as the *Sub Class*.
+
+![PCIe ID Settings](img/XDMA_Settings_PCIe_ID.png)
 
 The XDMA Driver will create a `/dev/xdma0_?` file for each channel. Multiple channels allow multiple programs or threads to access the AXI blocks in your design. For AXI4-Stream designs, each channel has its own circuit.
 
@@ -394,6 +437,8 @@ Add a [Floating-Point](https://docs.xilinx.com/v/u/en-US/pg060-floating-point) b
 
 ![XDMA Stream Demo Block Diagram](img/XDMA_Stream_Demo_Block_Diagram.png)
 
+[Expanded view](img/xdma_stream_Block_Diagram.png).
+
 
 #### AXI4-Stream Broadcaster Block
 
@@ -404,6 +449,13 @@ The *Broadcaster* block takes a 64-Bit=8-Byte input stream and outputs two 32-Bi
 One of the output streams is set up to be the lower 32-bits of the input and the second stream is the upper 32-bits.
 
 ![AXI-Stream Broadcaster Stream Splitting Options](img/AXI-Stream_Broadcaster_Stream_Splitting_Properties.png)
+
+
+#### M_AXI_LITE Addresses
+
+Set an *M_AXI_LITE* Address for the BRAM Block.
+
+![Set M_AXI_LITE Addresses](img/xdma_stream_AXILite_Addresses.png)
 
 
 #### Generate Bitstream
@@ -430,6 +482,37 @@ source PROJECT_NAME.tcl
 ```
 
 ![Vivado source Tcl Project](img/Vivado_source_Tcl_Project.png)
+
+
+### Porting the Design to Another FPGA
+
+Under *Tools->Settings*, change the **Project Device**.
+
+![Change Project Device](img/Change_Project_Device.png)
+
+The project's IP will now be out-of-date. Run *Report IP Status*.
+
+![Status of Project IP](img/Report_IP_Status_to_Convert_to_New_Device.png)
+
+Select all the IP check boxes and run *Upgrade Selected*.
+
+![Upgrade IP](img/Show_IP_Status_then_Upgrade_Selected.png)
+
+The IP should upgrade successfully if it is not too different an FPGA. Note that constraints will also need to be updated if the package has changed.
+
+![IP Successfully Upgraded](img/IP_Successfully_Upgraded.png)
+
+Rerun *IP Status* to confirm everything has upgraded.
+
+![Rerun IP Status](img/Rerun_IP_Status.png)
+
+[Edit the constraints file](#constraints) to target your FPGA board.
+
+![Edit constraints XDC File](img/Edit_constraints_XDC_File.png)
+
+Generate the Bitstream:
+
+![Generate the Bitstream](img/Generate_Bitstream.png)
 
 
 
