@@ -213,7 +213,7 @@ sudo ./stream_test
 
 ## Creating a Memory-Mapped XDMA Block Diagram Design
 
-Start Vivado and choose Create Project:
+This procedure will recreate the design in [`xdma_mm.tcl`](xdma_mm.tcl). Start Vivado and choose *Create Project*:
 
 ![Create Project](img/Vivado_Create_Project.png)
 
@@ -408,7 +408,7 @@ Generate a Memory Configuration File and follow your board's instructions for pr
 
 ## Creating an AXI4-Stream XDMA Block Diagram Design
 
-Start Vivado and choose Create Project:
+This procedure will recreate the design in [`xdma_stream.tcl`](xdma_stream.tcl). Start Vivado and choose *Create Project*:
 
 ![Create Project](img/Vivado_Create_Project.png)
 
@@ -474,11 +474,11 @@ Click on the `+` next to the `S_AXIS_C2H_0` and `M_AXIS_H2C_0` channels to expan
 
 #### AXI4-Stream Broadcaster Block
 
-Add a *AXI4-Stream Broadcaster* block which will take a 64-Bit=8-Byte input stream and output two 32-Bit=4-Byte streams. Connect its `S_AXIS` input to `M_AXIS_H2C_0` of the XDMA Block.
+Add an [AXI4-Stream Broadcaster](https://docs.xilinx.com/r/en-US/pg085-axi4stream-infrastructure/AXI4-Stream-Broadcaster?tocId=lTRZ8UtIrjz6JIc8NcwYXg) block which will take a 64-Bit=8-Byte input stream and output two 32-Bit=4-Byte streams. Connect its `S_AXIS` input to `M_AXIS_H2C_0` of the XDMA Block. Its *aclk* should connect to the XDMA block's *axi_aclk*. Its *aresetn* should connect to the XDMA block's *axi_aresetn*.
 
 ![AXI-Stream Broadcaster Block](img/AXI4-Stream_Broadcaster_Block.png)
 
-Set it up to convert a 8-Byte=64-Bit input stream into two 4-Byte=32-Bit output streams:
+Set it up to convert an 8-Byte=64-Bit input stream into two 4-Byte=32-Bit output streams:
 
 ![AXI-Stream Broadcaster Properties](img/AXI-Stream_Broadcaster_Properties.png)
 
@@ -489,11 +489,13 @@ One of the output streams is set up to be the lower 32-bits of the input and the
 
 #### Floating-Point Block
 
-Add a [Floating-Point](https://docs.xilinx.com/v/u/en-US/pg060-floating-point) block to the stream as an example of something useful. Connect its `S_AXIS` inputs to the `M??_AXIS` outputs of the *AXI4-Stream Broadcaster*. Each pair of 32-bit=4-byte single precision floating-point values in the 64-Bit=8-Byte Host-to-Card (H2C) stream gets multiplied to produce a floating-point value in the 64-Bit=8-Byte Card-to-Host (C2H) stream. Half as many reads from C2H are necessary as writes to H2C.
+Add a [Floating-Point](https://docs.xilinx.com/v/u/en-US/pg060-floating-point) block to the stream as an example of something useful. Connect its `S_AXIS_?` inputs to the `M??_AXIS` outputs of the *AXI4-Stream Broadcaster*. Its *aclk* and *aresetn* signals should connect to *axi_aclk* and *axi_aresetn* of the XDMA Block.
+
+Each pair of 32-bit=4-byte single precision floating-point values in the 64-Bit=8-Byte Host-to-Card (H2C) stream gets multiplied to produce a floating-point value in the 64-Bit=8-Byte Card-to-Host (C2H) stream. Half as many reads from C2H are necessary as writes to H2C.
 
 ![Floating-Point Block](img/Floating-Point_Block.png)
 
-The floating-point blocks are set up to multiply their inputs.
+The floating-point block is set up to multiply the inputs.
 
 ![Floating-Point Block Settings](img/Floating-Point_Settings.png)
 
@@ -508,13 +510,20 @@ The interface is set up as *Blocking* so that the AXI4-Stream interfaces include
 
 #### Data Width Converter
 
-Connect an [AXI4-Stream Data Width Converter](https://docs.xilinx.com/r/en-US/pg085-axi4stream-infrastructure/AXI4-Stream-Data-Width-Converter?tocId=XeJGiRyJ7jaFrWoPmP_A0w) input (`S_AXIS`) to the 32-Bit=4-Byte output of the Floating-Point block (`M_AXIS_RESULT`). Connect its output `M_AXIS` port to the `S_AXIS_C2H_0` port of the XDMA Block.
+Add an [AXI4-Stream Data Width Converter](https://docs.xilinx.com/r/en-US/pg085-axi4stream-infrastructure/AXI4-Stream-Data-Width-Converter?tocId=XeJGiRyJ7jaFrWoPmP_A0w). Connect its `S_AXIS` input to the 32-Bit=4-Byte `M_AXIS_RESULT` output of the Floating-Point block. Connect its output `M_AXIS` port to the `S_AXIS_C2H_0` port of the XDMA Block. Its *aclk* and *aresetn* signals should connect to *axi_aclk* and *axi_aresetn* of the XDMA Block.
 
 ![AXI4-Stream Data Width Converter Block](img/AXI4Stream_Data_Width_Converter_Block.png)
 
 Set it up to convert its 32-Bit=4-Byte input into a 64-Bit=8-Byte output compatible with the C2H port of the XDMA Block. It will use a FIFO to convert pairs of 32-Bit=4-Byte inputs into 64-Bit=8-Byte outputs.
 
 ![AXI4-Stream Data Width Converter Settings](img/AXI4Stream_Data_Width_Converter_Settings.png)
+
+
+#### M_AXI_LITE BRAM Circuit
+
+The demo circuit includes a BRAM Block connected to **M_AXI_LITE**.
+
+![M_AXI_LITE BRAM Circuit](img/XDMA_Stream_M_AXI_LITE_Circuit.png)
 
 
 #### M_AXI_LITE Addresses
@@ -548,7 +557,7 @@ Synthesis and Implementation should take about 10 minutes:
 
 ## Recreating a Project from a Tcl File
 
-Run the [`source`](https://docs.xilinx.com/r/2022.2-English/ug939-vivado-designing-with-ip-tutorial/Source-the-Tcl-Script?tocId=7apMNdBzAEx4udRnUANS9A) command in the Vivado *Tcl Console* to recreate a project.
+Run the [`source`](https://docs.xilinx.com/r/2022.2-English/ug939-vivado-designing-with-ip-tutorial/Source-the-Tcl-Script?tocId=7apMNdBzAEx4udRnUANS9A) command in the Vivado *Tcl Console* to recreate a project. The [`constraints.xdc`](constraints.xdc) file needs to be in the same directory.
 ```
 pwd
 cd DOWNLOAD_DIRECTORY
@@ -560,6 +569,8 @@ source PROJECT_NAME.tcl
 
 
 ### Porting the Design to Another FPGA
+
+If your board and target FPGA are different, the design can be re-targeted.
 
 Under *Tools->Settings*, change the **Project Device**.
 
