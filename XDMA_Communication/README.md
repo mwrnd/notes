@@ -90,7 +90,7 @@ sudo ./mm_axi_test
 
 
 
-### Memory-Mapped M_AXI_LITE
+### M_AXI_LITE
 
 The **M_AXI_LITE** interface is useful for single word access to register-like blocks as communication is via single Transaction Layer Packet (TLP) requests.
 
@@ -283,7 +283,7 @@ For this project only one of each interface is required.
 
 ![SmartConnect Block Properties](img/SmartConnect_Block_Properties.png)
 
-Both the **M_AXI** and **M_AXI_LITE** interfaces should have their own SmartConnect block. Connect their *aclk* input to the `xdma_0` block's *axi_aclk* and their *aresetn* input to *axi_aresetn*.
+Both the **M_AXI** and **M_AXI_LITE** interfaces should have their own SmartConnect block. Connect their *aclk* input to the `xdma_0` block's *axi_aclk* and their *aresetn* input to *axi_aresetn*. Connect the `S00_AXI` port of one block to `M_AXI` of the XDMA Block and similarly for `M_AXI_LITE`.
 
 ![SmartConnect Blocks for each AXI Interface](img/SmartConnect_Blocks_for_each_M_AXI_Interface.png)
 
@@ -294,7 +294,7 @@ Add AXI BRAM Controller:
 
 ![Add AXI BRAM Controller](img/Add_AXI_BRAM_Controller_IP.png)
 
-Add blocks for each SmartConnect interface and connect their `S_AXIS` ports to the corresponding `M_AXIS` port of the SmartConnect blocks.
+Add blocks for each SmartConnect interface and connect their `S_AXI` ports to the corresponding `M00_AXI` port of the SmartConnect blocks.
 
 ![BRAM Controller Block for each SmartConnectInterface](img/BRAM_Controller_Blocks_for_each_SmartConnect_Interface.png)
 
@@ -328,7 +328,7 @@ Open the *Address Editor* tab, right-click and select *Assign All*:
 
 ![Address Editor Assign All](img/Address_Editor_Assign_All.png)
 
-You can edit the AXI Block addresses as required. The *Range* is the size that Vivado will implement for each block. If the value is too large for your target FPGA then Implementation will fail. Even though each Network can have overlapping addresses, avoid this as it can lead to confusion.
+Edit the AXI Block addresses as required. The *Range* is the size that Vivado will implement for each block. If the value is too large for your target FPGA then Implementation will fail. Even though each Network can have overlapping addresses, avoid this as it can lead to confusion.
 
 ![AXI Addresses](img/Address_Editor.png)
 
@@ -395,7 +395,7 @@ Generate the Bitstream:
 
 ![Generate the Bitstream](img/Generate_Bitstream.png)
 
-Synthesis and Implementation should take about 10minutes:
+Synthesis and Implementation should take about 10 minutes:
 
 ![Resources Used](img/XDMA_Demo_Resources_Used.png)
 
@@ -439,7 +439,7 @@ Run Block Automation:
 
 ![Run Block Automation](img/Run_Block_Automation.png)
 
-When running Block Automation, choose **AXI Stream** as the *DMA Interface* and add an AXI Lite interface:
+Choose PCIe Lane Width and Link Speed compatible with your target board. Select **AXI Stream** as the *DMA Interface* and add an AXI Lite interface:
 
 ![XDMA Block Automation Stream and AXILite](img/XDMA_Block_Automation_Stream_and_AXILite.png)
 
@@ -476,6 +476,10 @@ Click on the `+` next to the `S_AXIS_C2H_0` and `M_AXIS_H2C_0` channels to expan
 
 Add a *AXI4-Stream Broadcaster* block which will take a 64-Bit=8-Byte input stream and output two 32-Bit=4-Byte streams. Connect its `S_AXIS` input to `M_AXIS_H2C_0` of the XDMA Block.
 
+![AXI-Stream Broadcaster Block](img/AXI4-Stream_Broadcaster_Block.png)
+
+Set it up to convert a 8-Byte=64-Bit input stream into two 4-Byte=32-Bit output streams:
+
 ![AXI-Stream Broadcaster Properties](img/AXI-Stream_Broadcaster_Properties.png)
 
 One of the output streams is set up to be the lower 32-bits of the input and the second stream is the upper 32-bits.
@@ -486,6 +490,8 @@ One of the output streams is set up to be the lower 32-bits of the input and the
 #### Floating-Point Block
 
 Add a [Floating-Point](https://docs.xilinx.com/v/u/en-US/pg060-floating-point) block to the stream as an example of something useful. Connect its `S_AXIS` inputs to the `M??_AXIS` outputs of the *AXI4-Stream Broadcaster*. Each pair of 32-bit=4-byte single precision floating-point values in the 64-Bit=8-Byte Host-to-Card (H2C) stream gets multiplied to produce a floating-point value in the 64-Bit=8-Byte Card-to-Host (C2H) stream. Half as many reads from C2H are necessary as writes to H2C.
+
+![Floating-Point Block](img/Floating-Point_Block.png)
 
 The floating-point blocks are set up to multiply their inputs.
 
@@ -502,18 +508,18 @@ The interface is set up as *Blocking* so that the AXI4-Stream interfaces include
 
 #### Data Width Converter
 
-Connect an [AXI4-Stream Data Width Converter](https://docs.xilinx.com/r/en-US/pg085-axi4stream-infrastructure/AXI4-Stream-Data-Width-Converter?tocId=XeJGiRyJ7jaFrWoPmP_A0w) to the 32-Bit=4-Byte output of the Floating-Point block. Its `M_AXIS` port should be connected to the `S_AXIS_C2H_0` port of the XDMA Block.
+Connect an [AXI4-Stream Data Width Converter](https://docs.xilinx.com/r/en-US/pg085-axi4stream-infrastructure/AXI4-Stream-Data-Width-Converter?tocId=XeJGiRyJ7jaFrWoPmP_A0w) input (`S_AXIS`) to the 32-Bit=4-Byte output of the Floating-Point block (`M_AXIS_RESULT`). Connect its output `M_AXIS` port to the `S_AXIS_C2H_0` port of the XDMA Block.
+
+![AXI4-Stream Data Width Converter Block](img/AXI4Stream_Data_Width_Converter_Block.png)
 
 Set it up to convert its 32-Bit=4-Byte input into a 64-Bit=8-Byte output compatible with the C2H port of the XDMA Block. It will use a FIFO to convert pairs of 32-Bit=4-Byte inputs into 64-Bit=8-Byte outputs.
-
-![H2C Data Width Converter](img/AXI4Stream_Data_Width_Converter_Settings.png)
 
 ![AXI4-Stream Data Width Converter Settings](img/AXI4Stream_Data_Width_Converter_Settings.png)
 
 
 #### M_AXI_LITE Addresses
 
-If you decide to [add a BRAM Block](#add-bram-controller-blocks) to the *M_AXI_LITE* port, set up its addresses.
+If you decide to [add a BRAM Block](#add-bram-controller-blocks) or other peripheral to the **M_AXI_LITE** port, set up its addresses.
 
 ![Set M_AXI_LITE Addresses](img/xdma_stream_AXILite_Addresses.png)
 
@@ -533,7 +539,7 @@ Generate the Bitstream:
 
 ![Generate the Bitstream](img/Generate_Bitstream.png)
 
-Synthesis and Implementation should take about 10minutes:
+Synthesis and Implementation should take about 10 minutes:
 
 ![Resources Used](img/XDMA_Stream_Demo_Resources_Used.png)
 
