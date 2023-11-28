@@ -90,7 +90,7 @@ sudo ./mm_axi_test
 
 
 
-### M_AXI_LITE
+### Memory-Mapped M_AXI_LITE
 
 The **M_AXI_LITE** interface is useful for single word access to register-like blocks as communication is via single Transaction Layer Packet (TLP) requests.
 
@@ -138,7 +138,7 @@ sudo ./mm_axilite_test
 
 
 
-### AXI4-Stream
+### AXI Stream
 
 **AXI4-Stream** is designed for continuous throughput. Multiples of the `tdata` width (64-Bits for this demo) needs to be read from (C2H) or written to (H2C) the XDMA Block.
 
@@ -184,7 +184,6 @@ float expected = 0;
 printf("\n");
 for (int i = 0 ; i < H2C_FLOAT_COUNT; i=i+2)
 {
-
     j = floor((i / 2));
     printf("%-2d, %-2d, h2c[%02d]*[%02d]=c2h[%02d] = %f*%f = %f",
             i, j, i, (i+1), j, h2c_data[i], h2c_data[(i+1)], c2h_data[j]);
@@ -244,7 +243,7 @@ Run Block Automation:
 
 ![Run Block Automation](img/Run_Block_Automation.png)
 
-Choose PCIe Lane Width and Link Speed, select **AXI Memory Mapped** for the DMA interface and add an AXI Lite interface.
+Choose PCIe Lane Width and Link Speed, select **AXI Memory Mapped** for the *DMA interface* and add an AXI Lite interface.
 
 ![XDMA AXI Memory Mapped with AXI Lite](img/XDMA_Block_Automation_MM_and_AXILite.png)
 
@@ -268,7 +267,7 @@ Set the PCIe ID to **Memory Controller** as the *Base Class* and **Other memory 
 
 ![PCIe ID Settings](img/XDMA_Settings_PCIe_ID.png)
 
-The XDMA Driver will create a `/dev/xdma0_?` file for each channel. Multiple channels allow multiple programs or threads to access the AXI blocks in your design. For AXI4-Stream designs, each channel has its own circuit.
+The XDMA Driver will create a `/dev/xdma0_?` file for each channel. Multiple channels allow multiple programs or threads to access the AXI blocks in your design.
 
 ![Memory Mapped DMA Channels](img/XDMA_Block_Properties_DMA_Channels.png)
 
@@ -404,39 +403,73 @@ Generate a Memory Configuration File and follow your board's instructions for pr
 
 ## Creating an AXI4-Stream XDMA Block Diagram Design
 
-Instructions are almost identical to [Creating a Memory-Mapped XDMA Block Diagram Design](#creating-a-memory-mapped-xdma-block-diagram-design) above with the following changes:
+Start Vivado and choose Create Project:
 
-#### Add XDMA Block
+![Create Project](img/Vivado_Create_Project.png)
 
-When running Block Automation, choose *AXI Stream* as the *DMA Interface*:
+It should be an RTL Project with no source files to start.
+
+![Create RTL Project](img/Vivado_Create_Project_New_Project.png)
+
+Choose the FPGA to target:
+
+![Choose Target FPGA](img/Vivado_Create_Project_Default_Part.png)
+
+Create a Block Design:
+
+![Create Block Design](img/Create_Block_Design.png)
+
+Add IP Blocks:
+
+![Add IP Blocks](img/Block_Diagram_Add_IP.png)
+
+
+#### Add XDMA Stream Block
+
+Add XDMA Block:
+
+![Add XDMA Block](img/Add_DMA_Bridge_Subsystem_for_PCI_Express_IP.png)
+
+Run Block Automation:
+
+![Run Block Automation](img/Run_Block_Automation.png)
+
+When running Block Automation, choose **AXI Stream** as the *DMA Interface* and add an AXI Lite interface:
 
 ![XDMA Block Automation Stream and AXILite](img/XDMA_Block_Automation_Stream_and_AXILite.png)
 
-You can also double-click the `xdma_` block and set properties:
+Block Automation should add the external PCIe TX+RX, Reset, and Clock signals:
 
-![XDMA Stream Block Properties](img/XDMA_Block_Properties_Stream.png)
+![Block Diagram after XDMA Block Automation](img/Block_Diagram_after_XDMA-Stream_Block_Automation.png)
 
-Select AXI Stream as the DMA Interface:
+Double-click the `xdma_0` Block to open it up for customization.
 
-![DMA Interface is AXI Stream](img/XDMA_Block_Properties_DMA_Stream_Interface.png)
+![XDMA Block Properties](img/XDMA_Block_Properties_Stream.png)
 
-Click on the `+` next to the `S_AXIS_C2H_0` and `M_AXIS_H2C_0` channels to expand them. Note the `tdata` width. It is 64-Bits for this demo.
+The *PCIe Block Location* chosen should be the closest PCIE Block adjacent to the transceiver Quad that the PCIe lanes are connected to on your FPGA board. Refer to the [Device Packaging and Pinouts Product Specification User Guide](https://docs.xilinx.com/r/en-US/ug575-ultrascale-pkg-pinout/XCKU15P-and-XQKU15P-Bank-Diagrams). The PCIe Lane Width and Link Speed throughput needs to match the AXI Data Width and Clock Frequency throughput. These four settings are interrelated. Note the Data Width is 64-Bit with these selections.
+
+![FPGA Banks](img/FPGA_Banks.png)
+
+A *PCIe to AXI Translation* offset is useful to make sure the *Size* of your AXI Lite BAR overlaps the address space of all peripheral blocks. This is useful when a soft-core processor has all of its peripherals in some specific address range. The offset can be `0` or [larger than *Size*](https://support.xilinx.com/s/question/0D52E00006hpbPJSAY/pcie-to-axi-translation-setting-for-dma-bypass-interface-not-being-applied?language=en_US).
+
+![AXI Lite BAR Setup](img/XDMA_Block_Properties_AXILite_BAR_Setup.png)
+
+Set the PCIe ID to **Memory Controller** as the *Base Class* and **Other memory controller** as the *Sub Class*.
+
+![PCIe ID Settings](img/XDMA_Settings_PCIe_ID.png)
+
+The XDMA Driver will create a `/dev/xdma0_?` file for each channel. Each channel has its own circuit.
+
+![Stream DMA Channels](img/XDMA_Block_Properties_DMA_Channels.png)
+
+Click on the `+` next to the `S_AXIS_C2H_0` and `M_AXIS_H2C_0` channels to expand them. Note the `tdata` width. It is 64-Bits for this demo. Connect `S_AXIS_C2H_1` and `M_AXIS_H2C_1` to each other for loopback testing.
 
 ![XDMA Stream Block](img/XDMA_Stream_xdma_0_Block.png)
-
-Add a [Floating-Point](https://docs.xilinx.com/v/u/en-US/pg060-floating-point) block that multiplies its two inputs. An [AXI4-Stream Broadcaster](https://docs.xilinx.com/r/en-US/pg085-axi4stream-infrastructure/AXI4-Stream-Broadcaster?tocId=lTRZ8UtIrjz6JIc8NcwYXg) and [AXI4-Stream Data Width Converter](https://docs.xilinx.com/r/en-US/pg085-axi4stream-infrastructure/AXI4-Stream-Data-Width-Converter?tocId=XeJGiRyJ7jaFrWoPmP_A0w) will be required to interface the floating-point block to the XDMA block as every 2 inputs have 1 output. The *Broadcaster* block splits the 64-bit input into two 32-bit float values. The *Data Width Converter* waits for two 32-bit values to convert them into a 64-bit value. Refer to the [xdma_stream_512bit](https://github.com/mwrnd/innova2_experiments/tree/main/xdma_stream_512bit) project for a demonstration.
-
-
-#### Stream Block Diagram
-
-![XDMA Stream Demo Block Diagram](img/XDMA_Stream_Demo_Block_Diagram.png)
-
-[Expanded view](img/xdma_stream_Block_Diagram.png).
 
 
 #### AXI4-Stream Broadcaster Block
 
-The *Broadcaster* block takes a 64-Bit=8-Byte input stream and outputs two 32-Bit=4-Byte streams.
+Add a *AXI4-Stream Broadcaster* block which will take a 64-Bit=8-Byte input stream and output two 32-Bit=4-Byte streams. Connect its `S_AXIS` input to `M_AXIS_H2C_0` of the XDMA Block.
 
 ![AXI-Stream Broadcaster Properties](img/AXI-Stream_Broadcaster_Properties.png)
 
@@ -445,11 +478,48 @@ One of the output streams is set up to be the lower 32-bits of the input and the
 ![AXI-Stream Broadcaster Stream Splitting Options](img/AXI-Stream_Broadcaster_Stream_Splitting_Properties.png)
 
 
+#### Floating-Point Block
+
+Add a [Floating-Point](https://docs.xilinx.com/v/u/en-US/pg060-floating-point) block in the stream as an example of something useful. Connect its `S_AXIS` inputs to the `M??_AXIS` outputs of the *AXI4-Stream Broadcaster*. Each pair of 32-bit=4-byte single precision floating-point values in the 64-Bit=8-Byte Host-to-Card (H2C) stream gets multiplied to produce a floating-point value in the 64-Bit=8-Byte Card-to-Host (C2H) stream. Half as many reads from C2H are necessary as writes to H2C.
+
+The floating-point blocks are set up to multiply their inputs.
+
+![Floating-Point Block Settings](img/Floating-Point_Settings.png)
+
+Full DSP usage is allowed to maximize throughput.
+
+![Floating-Point Block Optimization Settings](img/Floating-Point_Optimizations.png)
+
+The interface is set up as *Blocking* so that the AXI4-Stream interfaces include `tready` signals like the rest of the Stream blocks.
+
+![Floating-Point Block Interface Settings](img/Floating-Point_Interface.png)
+
+
+#### Data Width Converter
+
+Connect an [AXI4-Stream Data Width Converter](https://docs.xilinx.com/r/en-US/pg085-axi4stream-infrastructure/AXI4-Stream-Data-Width-Converter?tocId=XeJGiRyJ7jaFrWoPmP_A0w) to the 32-Bit=4-Byte output of the Floating-Point block. Its `M_AXIS` port should be connected to the `S_AXIS_C2H_0` port of the XDMA Block.
+
+Set it up to convert its 32-Bit=4-Byte input into a 64-Bit=8-Byte output compatible with the C2H port of the XDMA Block. It will use a FIFO to convert pairs of 32-Bit=4-Byte inputs into 64-Bit=8-Byte outputs.
+
+![H2C Data Width Converter](img/AXI4Stream_Data_Width_Converter_Settings.png)
+
+![AXI4-Stream Data Width Converter Settings](img/AXI4Stream_Data_Width_Converter_Settings.png)
+
+
 #### M_AXI_LITE Addresses
 
 Set an *M_AXI_LITE* Address for the BRAM Block.
 
 ![Set M_AXI_LITE Addresses](img/xdma_stream_AXILite_Addresses.png)
+
+
+#### Stream Block Diagram
+
+The resulting XDMA Stream Block Diagram:
+
+![XDMA Stream Demo Block Diagram](img/XDMA_Stream_Demo_Block_Diagram.png)
+
+[Expanded view](img/xdma_stream_Block_Diagram.png).
 
 
 #### Generate Bitstream
