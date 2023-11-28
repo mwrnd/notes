@@ -11,9 +11,7 @@ For when you already have an [XDMA FPGA design](#creating-a-memory-mapped-xdma-b
 
 ![XDMA Memory-Mapped Demo Block Diagram](img/XDMA_Demo_Block_Diagram.png)
 
-The XDMA driver from [dma_ip_drivers](https://github.com/xilinx/dma_ip_drivers) creates [character device files](https://en.wikipedia.org/wiki/Device_file#Character_devices) for access to the AXI Bus. For DMA transfers to **M_AXI** blocks, `/dev/xdma0_h2c_0` is Write-Only and `/dev/xdma0_c2h_0` is Read-Only. For single word (32-Bit) register-like reads and writes to **M_AXI_LITE** the `/dev/xdma0_user` is Read-Write.
-
-[write-only and read-only](https://manpages.debian.org/bookworm/manpages-dev/open.2.en.html#File_access_mode), `/dev/xdma0_h2c_0` and `/dev/xdma0_c2h_0` respectively. They allow direct access to the FPGA design's AXI Bus. To read from an AXI Block at address `0xC0000000` you would read from address `0xC0000000` of the `/dev/xdma0_c2h_0` (Card-to-Host) file. To write you would write to the appropriate address of `/dev/xdma0_h2c_0` (Host-to-Card).
+The XDMA driver from [dma_ip_drivers](https://github.com/xilinx/dma_ip_drivers) creates [character device files](https://en.wikipedia.org/wiki/Device_file#Character_devices) for access to the AXI Bus. For DMA transfers to **M_AXI** blocks, `/dev/xdma0_h2c_0` is Write-Only and `/dev/xdma0_c2h_0` is Read-Only. To read from an AXI Block at address `0xC0000000` you would read from address `0xC0000000` of the `/dev/xdma0_c2h_0` (Card-to-Host) file. To write you would write to the appropriate address of `/dev/xdma0_h2c_0` (Host-to-Card). For single word (32-Bit) register-like reads and writes to **M_AXI_LITE**, `/dev/xdma0_user` is Read-Write. 
 
 [`pread`/`pwrite`](https://manpages.ubuntu.com/manpages/jammy/en/man2/pread.2.html) combine [`lseek`](https://manpages.ubuntu.com/manpages/jammy/en/man2/lseek.2.html) and [`read`/`write`](https://manpages.ubuntu.com/manpages/jammy/en/man2/read.2.html).
 ```C
@@ -28,7 +26,7 @@ ssize_t pwrite(int fd, const void *buf, size_t count, off_t offset);
 
 ### Memory-Mapped M_AXI
 
-The **M_AXI** interface is for Direct Memory Access (DMA) to AXI blocks as communication is via Transaction Layer Packet (TLP) requests.
+The **M_AXI** interface is for Direct Memory Access (DMA) to AXI blocks.
 
 ![M_AXI Network](img/M_AXI_Interface.png)
 
@@ -36,7 +34,7 @@ The [BRAM Controller Block](https://docs.xilinx.com/v/u/en-US/pg078-axi-bram-ctr
 
 ![M_AXI Addresses](img/Address_Editor_M_AXI.png)
 
-The following is some minimal C code without error checking. Observe the `buffer` is defined as an array of [32-Bit unsigned integers (`uint32_t`)](https://manpages.ubuntu.com/manpages/trusty/en/man7/stdint.h.7posix.html) and is used as such but `pread`/`pwrite` operate on bytes. `/dev/xdma0_h2c_0` is opened as Write-Only ([`O_WRONLY`](https://manpages.ubuntu.com/manpages/trusty/en/man2/open.2.html)) as reads from it will fail. `/dev/xdma0_c2h_0` is opened as Read-Only ([`O_RDONLY`](https://manpages.ubuntu.com/manpages/trusty/en/man2/open.2.html)) as writes to it will fail.
+The following is some minimal C code without error checking. Observe the `buffer` is defined as an array of [32-Bit unsigned integers (`uint32_t`)](https://manpages.ubuntu.com/manpages/trusty/en/man7/stdint.h.7posix.html) and is used as such but `pread`/`pwrite` operate on bytes. `/dev/xdma0_h2c_0` is opened as Write-Only ([`O_WRONLY`](https://manpages.ubuntu.com/manpages/trusty/en/man2/open.2.html)) and reads from it will fail. `/dev/xdma0_c2h_0` is opened as Read-Only ([`O_RDONLY`](https://manpages.ubuntu.com/manpages/trusty/en/man2/open.2.html)) and writes to it will fail.
 ```C
 #define DATA_BYTES    8192
 #define DATA_WORDS    (DATA_BYTES/4)
@@ -59,11 +57,9 @@ int xdma_h2cfd = open("/dev/xdma0_h2c_0", O_WRONLY);
 // Write the full buffer to the FPGA design's BRAM
 rc = pwrite(xdma_h2cfd, buffer, DATA_BYTES, address);
 
-
 // Clear the buffer to make sure data was read from FPGA
 printf("\nClearing buffer.\n");
 for (int i = 0; i < DATA_WORDS ; i++) { buffer[i] = 0; }
-
 
 // Open M_AXI C2H Card-to-Host Device as Read-Only
 int xdma_c2hfd = open("/dev/xdma0_c2h_0", O_RDONLY);
@@ -77,7 +73,6 @@ printf("[0]=%04d, [4]=%04d, [%d]=%04d\n",
         (DATA_WORDS - 3), (uint32_t)buffer[(DATA_WORDS-3)]);
 
 printf("\nrc = %ld = bytes read from FPGA's BRAM\n", rc);
-
 
 close(xdma_h2cfd);
 close(xdma_c2hfd);
@@ -105,7 +100,7 @@ The [BRAM Controller Block](https://docs.xilinx.com/v/u/en-US/pg078-axi-bram-ctr
 
 ![M_AXI_LITE Addresses](img/Address_Editor_M_AXI_LITE.png)
 
-However, the XDMA Block is set up with a PCIe to AXI Translation offset of `0x40000000` which must be subtracted from the intended AXI address. This is useful for soft-core processors as it allows the 1Megabyte *Size* of the AXI-Lite BAR (Base Address Register) to overlap all attached peripheral blocks.
+The XDMA Block is [set up with a PCIe to AXI Translation offset](#add-xdma-block) of `0x40000000` which must be subtracted from the intended AXI address. This is useful for soft-core processors as it allows the 1Megabyte *Size* of the AXI-Lite BAR (Base Address Register) to overlap all attached peripheral blocks.
 
 ![M_AXI_LITE BAR Setup](img/XDMA_Block_Properties_AXILite_BAR_Setup.png)
 
@@ -145,11 +140,13 @@ sudo ./mm_axilite_test
 
 ### AXI4-Stream
 
-**AXI4-Stream** is designed for continuous throughput. Multiples of the `tdata` width of data (64-Bits for this demo) needs to be read from (C2H) or written to (H2C) the XDMA Block.
+**AXI4-Stream** is designed for continuous throughput. Multiples of the `tdata` width (64-Bits for this demo) needs to be read from (C2H) or written to (H2C) the XDMA Block.
 
 ![XDMA Stream Block](img/XDMA_Stream_xdma_0_Block.png)
 
-For the simple included demo, [`xdma_stream.tcl`](xdma_stream.tcl), twice as much data is sent than received. [Configuration bitstreams are available](https://github.com/mwrnd/notes/releases/v0.1.0/) for the [Innova-2](https://github.com/mwrnd/innova2_flex_xcku15p_notes). Each pair of floating-point values is multiplied to an output floating-point value. To account for FIFOs built into the AXI4-Stream blocks, 16 floats are sent and 8 are received. Data is sent and received to address `0` as it is not stored. The data stream sinks into **S_AXIS_C2H_?** and flows from **M_AXIS_H2C_?** interfaces. Refer to the [xdma_stream](https://github.com/mwrnd/innova2_experiments/tree/main/xdma_stream) and [xdma_stream_512bit](https://github.com/mwrnd/innova2_experiments/tree/main/xdma_stream_512bit) projects for demonstrations.
+For the simple included demo, [`xdma_stream.tcl`](xdma_stream.tcl), twice as much data is sent than received. The design can be [recreated for other FPGA targets](#recreating-a-project-from-a-tcl-file). [Configuration bitstreams are available](https://github.com/mwrnd/notes/releases/v0.1.0/) for the [Innova-2](https://github.com/mwrnd/innova2_flex_xcku15p_notes).
+
+Each pair of input (H2C) floating-point values is multiplied to an output (C2H) floating-point value. To account for FIFOs built into the AXI4-Stream blocks, 16 floats (64-bytes) are sent and 8 are received. Data is sent and received to address `0` as it is a stream. The data stream sinks into **S_AXIS_C2H_?** and flows from **M_AXIS_H2C_?** interfaces. Refer to the [xdma_stream](https://github.com/mwrnd/innova2_experiments/tree/main/xdma_stream) and [xdma_stream_512bit](https://github.com/mwrnd/innova2_experiments/tree/main/xdma_stream_512bit) projects for demonstrations.
 
 ![XDMA Stream Demo Block Diagram](img/XDMA_Stream_Demo_Block_Diagram.png)
 
@@ -217,9 +214,6 @@ sudo ./stream_test
 ## Creating a Memory-Mapped XDMA Block Diagram Design
 
 Start Vivado and choose Create Project:
-```
-sudo /tools/Xilinx/Vivado/2022.2/bin/vivado
-```
 
 ![Create Project](img/Vivado_Create_Project.png)
 
@@ -266,7 +260,7 @@ The *PCIe Block Location* chosen should be the closest PCIE Block adjacent to th
 
 ![FPGA Banks](img/FPGA_Banks.png)
 
-A *PCIe to AXI Translation* offset is useful to make sure the *Size* of your AXI Lite BAR overlaps the address space of all peripheral blocks. This is useful when a soft-core processor has all of its peripherals in some specific address range. The offset can be `0`.
+A *PCIe to AXI Translation* offset is useful to make sure the *Size* of your AXI Lite BAR overlaps the address space of all peripheral blocks. This is useful when a soft-core processor has all of its peripherals in some specific address range. The offset can be `0` or [larger than *Size*](https://support.xilinx.com/s/question/0D52E00006hpbPJSAY/pcie-to-axi-translation-setting-for-dma-bypass-interface-not-being-applied?language=en_US).
 
 ![AXI Lite BAR Setup](img/XDMA_Block_Properties_AXILite_BAR_Setup.png)
 
