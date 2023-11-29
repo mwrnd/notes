@@ -573,14 +573,14 @@ Choose to generate a new Block Memory (*New Blk_Mem_Gen*) for the BRAM Controlle
 
 A [Block Memory Generator](https://docs.xilinx.com/v/u/en-US/pg058-blk-mem-gen) should appear for each BRAM Controller.
 
-![Block Memory Generator for each BRAM Controller](img/SmartConnect_and_AXI_BRAM_Controller.png)
+![Block Memory Generator for each BRAM Controller](img/Block_Memory_Generator_and_BRAM_Controller.png)
 
 
 
 
 ##### M_AXI_LITE BRAM Circuit Diagram
 
-Finished BRAM Block connected to **M_AXI_LITE**. Adding other low throughput register interface blocks such as [GPIO](https://docs.xilinx.com/v/u/en-US/pg144-axi-gpio) is similarly accomplished by adding more **M??_AXI** ports to the SmartConnect Block.
+Finished BRAM Block connected to **M_AXI_LITE**. Adding other low-throughput register interface-like blocks such as [GPIO](https://docs.xilinx.com/v/u/en-US/pg144-axi-gpio) is similarly accomplished by adding more **M??_AXI** ports to the SmartConnect Block.
 
 ![M_AXI_LITE BRAM Circuit](img/XDMA_Stream_M_AXI_LITE_Circuit.png)
 
@@ -598,7 +598,7 @@ The resulting complete XDMA Stream Block Diagram:
 
 Open the *Address Editor* tab, right-click and select *Assign All*:
 
-![Address Editor Assign All](img/Address_Editor_Assign_All.png)
+![Address Editor Assign All](img/Address_Editor_1Network_Assign_All.png)
 
 Edit the AXI Block addresses as required. The *Range* is the size that Vivado will implement for each block. If the value is too large for your target FPGA then Implementation will fail. Larger sizes may have timing issues as more FPGA resources that are further apart are needed.
 
@@ -690,14 +690,10 @@ source PROJECT_NAME.tcl
 
 ![Vivado source Tcl Project](img/Vivado_source_Tcl_Project.png)
 
-Generate the Bitstream:
-
-![Generate the Bitstream](img/Generate_Bitstream.png)
-
 
 ### Porting the Design to Another FPGA
 
-If your board and target FPGA are different, the design can be re-targeted.
+If your board and target FPGA are different than those in the `.tcl` project file, the design can be re-targeted.
 
 Under *Tools->Settings*, change the **Project Device**.
 
