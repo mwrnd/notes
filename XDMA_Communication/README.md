@@ -218,7 +218,7 @@ sudo ./stream_test
 
 ## Creating a Memory-Mapped XDMA Block Diagram Design
 
-This procedure will recreate the design in [`xdma_mm.tcl`](xdma_mm.tcl), which can also be `source`'ed in Vivado and [retargeted to other FPGAs and/or boards](#recreating-a-project-from-a-tcl-file).
+This procedure will recreate the design in [`xdma_mm.tcl`](xdma_mm.tcl), which can also be `source`'ed in Vivado and [retargeted to other FPGAs and/or boards](#recreating-a-project-from-a-tcl-file) to avoid the following.
 
 Start Vivado and choose *Create Project*:
 
@@ -259,7 +259,7 @@ Block Automation should add the external PCIe TX+RX, Reset, and Clock signals:
 
 ![Block Diagram after XDMA Block Automation](img/Block_Diagram_after_XDMA_Block_Automation.png)
 
-Double-click the `xdma_0` Block to open it up for customization.
+Double-click the `xdma_0` Block to open it up for customization. Notice *AXI Data Width* is 64-Bit.
 
 ![XDMA Block Properties](img/XDMA_Block_Properties.png)
 
@@ -267,7 +267,7 @@ The *PCIe Block Location* chosen should be the closest PCIE Block adjacent to th
 
 ![FPGA Banks](img/FPGA_Banks.png)
 
-Set the PCIe ID to **Memory Controller** as the *Base Class* and **Other memory controller** as the *Sub Class*.
+Set the PCIe ID *Base Class* to **Memory Controller** as the *Sub Class* to **Other memory controller**.
 
 ![PCIe ID Settings](img/XDMA_Settings_PCIe_ID.png)
 
@@ -301,11 +301,11 @@ Add AXI BRAM Controller:
 
 ![Add AXI BRAM Controller](img/Add_AXI_BRAM_Controller_IP.png)
 
-Add blocks for each SmartConnect interface and connect their `S_AXI` ports to the corresponding `M00_AXI` port of the SmartConnect blocks.
+Add a BRAM Controller for each SmartConnect interface and connect their `S_AXI` ports to the corresponding `M00_AXI` port of the SmartConnect blocks.
 
 ![BRAM Controller Block for each SmartConnectInterface](img/BRAM_Controller_Blocks_for_each_SmartConnect_Interface.png)
 
-Double-click the `axi_bram_ctrl_0` block connected to the PCIe **M_AXI** interface and choose 64-Bit as the Data Width. This matches the AXI Data Width of the `xdma_0` block. The Number of BRAM interfaces is set to 1 to simplify the design.
+Double-click the `axi_bram_ctrl_0` block connected to the PCIe **M_AXI** interface and choose a Data Width that matches the *AXI Data Width* of the `xdma_0` block which is 64-Bit for this example. The Number of BRAM interfaces is set to 1 to simplify the design.
 
 ![M_AXI BRAM Controller Data Width is 64-Bit](img/AXI_BRAM_Controller_Block_Properties_AXI_64Bit.png)
 
@@ -421,7 +421,7 @@ Generate a Memory Configuration File and follow your board's instructions for pr
 
 ## Creating an AXI4-Stream XDMA Block Diagram Design
 
-This procedure will recreate the design in [`xdma_stream.tcl`](xdma_stream.tcl), which can also be `source`'ed in Vivado and [retargeted to other FPGAs and/or boards](#recreating-a-project-from-a-tcl-file).
+This procedure will recreate the design in [`xdma_stream.tcl`](xdma_stream.tcl), which can also be `source`'ed in Vivado and [retargeted to other FPGAs and/or boards](#recreating-a-project-from-a-tcl-file) to avoid the following.
 
 ![Create Project](img/Vivado_Create_Project.png)
 
@@ -460,7 +460,7 @@ Block Automation should add the external PCIe TX+RX, Reset, and Clock signals:
 
 ![Block Diagram after XDMA Block Automation](img/Block_Diagram_after_XDMA-Stream_Block_Automation.png)
 
-Double-click the `xdma_0` Block to open it up for customization.
+Double-click the `xdma_0` Block to open it up for customization. Notice *AXI Data Width* is 64-Bit.
 
 ![XDMA Block Properties](img/XDMA_Block_Properties_Stream.png)
 
@@ -468,7 +468,7 @@ The *PCIe Block Location* chosen should be the closest PCIE Block adjacent to th
 
 ![FPGA Banks](img/FPGA_Banks.png)
 
-Set the PCIe ID to **Memory Controller** as the *Base Class* and **Other memory controller** as the *Sub Class*.
+Set the PCIe ID *Base Class* to **Memory Controller** as the *Sub Class* to **Other memory controller**.
 
 ![PCIe ID Settings](img/XDMA_Settings_PCIe_ID.png)
 
@@ -495,7 +495,7 @@ Set it up to convert an 8-Byte=64-Bit input stream into two 4-Byte=32-Bit output
 
 ![AXI-Stream Broadcaster Properties](img/AXI-Stream_Broadcaster_Properties.png)
 
-One of the output streams is set up to be the lower 32-bits of the input and the second stream is the upper 32-bits.
+In the *Stream Splitting Options* tab, one of the output streams is set up to be the lower 32-bits of the input and the second stream is the upper 32-bits.
 
 ![AXI-Stream Broadcaster Stream Splitting Options](img/AXI-Stream_Broadcaster_Stream_Splitting_Properties.png)
 
@@ -544,7 +544,7 @@ For this project only one of each interface is required.
 
 ![SmartConnect Block Properties](img/SmartConnect_Block_Properties.png)
 
-Connect its *aclk* input to the `xdma_0` block's *axi_aclk* and its *aresetn* input to *axi_aresetn*. Connect the `S00_AXI` port of the SmartConnect block to `M_AXI` of the XDMA Block.
+Connect its *aclk* input to the `xdma_0` block's *axi_aclk* and its *aresetn* input to *axi_aresetn*. Connect the `S00_AXI` port of the SmartConnect block to the `M_AXI_LITE` port of the XDMA Block.
 
 ![SmartConnect Blocks for each AXI Interface](img/XDMA-Stream_M_AXI_LITE_to_SmartConnect.png)
 
@@ -580,7 +580,7 @@ A [Block Memory Generator](https://docs.xilinx.com/v/u/en-US/pg058-blk-mem-gen) 
 
 ##### M_AXI_LITE BRAM Circuit Diagram
 
-Finished BRAM Block connected to **M_AXI_LITE**. Adding other low throughput register interface blocks such as GPIO is similarly accomplished by adding more **M??_AXI** ports to the SmartConnect Block.
+Finished BRAM Block connected to **M_AXI_LITE**. Adding other low throughput register interface blocks such as [GPIO](https://docs.xilinx.com/v/u/en-US/pg144-axi-gpio) is similarly accomplished by adding more **M??_AXI** ports to the SmartConnect Block.
 
 ![M_AXI_LITE BRAM Circuit](img/XDMA_Stream_M_AXI_LITE_Circuit.png)
 
@@ -689,6 +689,10 @@ source PROJECT_NAME.tcl
 ```
 
 ![Vivado source Tcl Project](img/Vivado_source_Tcl_Project.png)
+
+Generate the Bitstream:
+
+![Generate the Bitstream](img/Generate_Bitstream.png)
 
 
 ### Porting the Design to Another FPGA
