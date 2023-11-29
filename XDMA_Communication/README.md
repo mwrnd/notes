@@ -580,7 +580,7 @@ A [Block Memory Generator](https://docs.xilinx.com/v/u/en-US/pg058-blk-mem-gen) 
 
 ##### M_AXI_LITE BRAM Circuit Diagram
 
-Finished BRAM Block connected to **M_AXI_LITE**. Adding other low-throughput register interface-like blocks such as [GPIO](https://docs.xilinx.com/v/u/en-US/pg144-axi-gpio) is similarly accomplished by adding more **M??_AXI** ports to the SmartConnect Block.
+Finished BRAM Block connected to **M_AXI_LITE**. Adding other low-throughput register-like blocks such as [GPIO](https://docs.xilinx.com/v/u/en-US/pg144-axi-gpio) is similarly accomplished by adding more **M??_AXI** ports to the SmartConnect Block.
 
 ![M_AXI_LITE BRAM Circuit](img/XDMA_Stream_M_AXI_LITE_Circuit.png)
 
