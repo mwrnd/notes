@@ -7,7 +7,7 @@ Tutorial for writing software on Linux to communicate with an [XDMA](https://doc
 
 ## QuickStart
 
-The XDMA driver from [dma_ip_drivers](https://github.com/xilinx/dma_ip_drivers) creates [character device files](https://en.wikipedia.org/wiki/Device_file#Character_devices) for access to an AXI Bus. For DMA transfers to **M_AXI** blocks, `/dev/xdma0_h2c_0` is Write-Only and `/dev/xdma0_c2h_0` is Read-Only. To read from an AXI Block at address `0xC0000000` you would read from address `0xC0000000` of the `/dev/xdma0_c2h_0` (Card-to-Host) file. To write you would write to the appropriate address of the `/dev/xdma0_h2c_0` (Host-to-Card) file. For single word (32-Bit) register-like reads and writes to **M_AXI_LITE**, `/dev/xdma0_user` is Read-Write. 
+The [XDMA driver from dma_ip_drivers](https://github.com/Xilinx/dma_ip_drivers/tree/master/XDMA/linux-kernel) creates [character device files](https://en.wikipedia.org/wiki/Device_file#Character_devices) for access to an AXI Bus. For DMA transfers to **M_AXI** blocks, `/dev/xdma0_h2c_0` is Write-Only and `/dev/xdma0_c2h_0` is Read-Only. To read from an AXI Block at address `0x12345600` you would read from address `0x12345600` of the `/dev/xdma0_c2h_0` (Card-to-Host) file. To write you would write to the appropriate address of the `/dev/xdma0_h2c_0` (Host-to-Card) file. For single word (32-Bit) register-like reads and writes to **M_AXI_LITE**, `/dev/xdma0_user` is Read-Write. 
 
 [`pread`/`pwrite`](https://manpages.ubuntu.com/manpages/jammy/en/man2/pread.2.html) combine [`lseek`](https://manpages.ubuntu.com/manpages/jammy/en/man2/lseek.2.html) and [`read`/`write`](https://manpages.ubuntu.com/manpages/jammy/en/man2/read.2.html).
 ```C
@@ -20,11 +20,16 @@ ssize_t pwrite(int fd, const void *buf, size_t count, off_t offset);
 
 
 
-### Memory-Mapped M_AXI
+## Memory-Mapped
 
 See [Creating a Memory-Mapped XDMA Block Diagram Design](#creating-a-memory-mapped-xdma-block-diagram-design) below for instructions to re create the simple included demo, [`xdma_mm.tcl`](xdma_mm.tcl). It can also be [retargeted to other FPGAs and/or boards](#recreating-a-project-from-a-tcl-file). [Configuration bitstreams are available](https://github.com/mwrnd/notes/releases/v0.1.0/) for the [Innova-2](https://github.com/mwrnd/innova2_flex_xcku15p_notes).
 
 ![XDMA Memory-Mapped Demo Block Diagram](img/XDMA_Demo_Block_Diagram.png)
+
+
+
+
+### M_AXI
 
 The **M_AXI** interface is for Direct Memory Access (DMA) to AXI blocks.
 
@@ -100,7 +105,7 @@ The [BRAM Controller Block](https://docs.xilinx.com/v/u/en-US/pg078-axi-bram-ctr
 
 ![M_AXI_LITE Addresses](img/Address_Editor_M_AXI_LITE.png)
 
-The XDMA Block is [set up with a PCIe to AXI Translation offset](#add-xdma-block) of `0x40000000` which must be subtracted from the intended AXI address. This is useful for soft-core processors as it allows the 1Megabyte *Size* of the AXI-Lite BAR (Base Address Register) to overlap all attached peripheral blocks.
+The XDMA Block is [set up with a PCIe to AXI Translation offset](#add-xdma-block) of `0x40000000` which must be subtracted from the intended AXI address. This is useful for soft-core processors as it allows the 1Megabyte *Size* of the AXI-Lite BAR (Base Address Register) to overlap all attached [peripheral blocks](https://en.wikipedia.org/wiki/Memory-mapped_I/O_and_port-mapped_I/O).
 
 ![M_AXI_LITE BAR Setup](img/XDMA_Block_Properties_AXILite_BAR_Setup.png)
 
@@ -147,7 +152,7 @@ sudo ./mm_axilite_test
 
 See [Creating an AXI4-Stream XDMA Block Diagram Design](#creating-an-axi4-stream-xdma-block-diagram-design) below for instructions to recreate the simple included demo, [`xdma_stream.tcl`](xdma_stream.tcl). It can also be [retargeted to other FPGAs and/or boards](#recreating-a-project-from-a-tcl-file). [Configuration bitstreams are available](https://github.com/mwrnd/notes/releases/v0.1.0/) for the [Innova-2](https://github.com/mwrnd/innova2_flex_xcku15p_notes).
 
-Each pair of input (H2C) floating-point values is multiplied to an output (C2H) floating-point value. To account for FIFOs built into the AXI4-Stream blocks, 16 floats (64-bytes) are sent and 8 are received. Data is sent and received to address `0` as it is a stream. The data stream sinks into **S_AXIS_C2H_?** and flows from **M_AXIS_H2C_?** interfaces. Refer to the [xdma_stream](https://github.com/mwrnd/innova2_experiments/tree/main/xdma_stream) and [xdma_stream_512bit](https://github.com/mwrnd/innova2_experiments/tree/main/xdma_stream_512bit) projects for more complex demonstrations.
+Each pair of input (H2C) floating-point values is multiplied to an output (C2H) floating-point value. To account for FIFOs built into the AXI4-Stream blocks, 16 floats (64-bytes) are sent and 8 are received. Data is sent and received to address `0` as it is a stream. The data stream sinks into **S_AXIS_C2H_?** and flows from **M_AXIS_H2C_?** interfaces. Check out the [xdma_stream_512bit](https://github.com/mwrnd/innova2_experiments/tree/main/xdma_stream_512bit) project for a more complex demonstration.
 
 ![XDMA Stream Demo Block Diagram](img/XDMA_Stream_Demo_Block_Diagram.png)
 
@@ -213,7 +218,9 @@ sudo ./stream_test
 
 ## Creating a Memory-Mapped XDMA Block Diagram Design
 
-This procedure will recreate the design in [`xdma_mm.tcl`](xdma_mm.tcl). Start Vivado and choose *Create Project*:
+This procedure will recreate the design in [`xdma_mm.tcl`](xdma_mm.tcl), which can also be `source`'ed in Vivado and [retargeted to other FPGAs and/or boards](#recreating-a-project-from-a-tcl-file).
+
+Start Vivado and choose *Create Project*:
 
 ![Create Project](img/Vivado_Create_Project.png)
 
@@ -298,6 +305,14 @@ Add blocks for each SmartConnect interface and connect their `S_AXI` ports to th
 
 ![BRAM Controller Block for each SmartConnectInterface](img/BRAM_Controller_Blocks_for_each_SmartConnect_Interface.png)
 
+Double-click the `axi_bram_ctrl_0` block connected to the PCIe **M_AXI** interface and choose 64-Bit as the Data Width. This matches the AXI Data Width of the `xdma_0` block. The Number of BRAM interfaces is set to 1 to simplify the design.
+
+![M_AXI BRAM Controller Data Width is 64-Bit](img/AXI_BRAM_Controller_Block_Properties_AXI_64Bit.png)
+
+Double-click the `axi_bram_ctrl_1` block connected to the PCIe **M_AXI_LITE** interface and choose *AXI4LITE* as the AXI Protocol which forces the Data Width to 32-Bit. The Number of BRAM interfaces is set to 1 to simplify the design.
+
+![M_AXI_LITE BRAM Controller Protocol is AXI4LITE](img/AXI_BRAM_Controller_Block_Properties_AXILite.png)
+
 Run Block Automation:
 
 ![Run Block Automation](img/Run_Block_Automation.png)
@@ -310,13 +325,7 @@ A [Block Memory Generator](https://docs.xilinx.com/v/u/en-US/pg058-blk-mem-gen) 
 
 ![Block Memory Generator for each BRAM Controller](img/Block_Memory_Generator_Blocks_for_each_BRAM_Controller.png)
 
-Double-click the `axi_bram_ctrl_0` block connected to the PCIe **M_AXI** interface and choose 64-Bit as the Data Width. This matches the AXI Data Width of the `xdma_0` block. The Number of BRAM interfaces is set to 1 to simplify the design.
 
-![M_AXI BRAM Controller Data Width is 64-Bit](img/AXI_BRAM_Controller_Block_Properties_AXI_64Bit.png)
-
-Double-click the `axi_bram_ctrl_1` block connected to the PCIe **M_AXI_LITE** interface and choose *AXI4LITE* as the AXI Protocol which forces the Data Width to 32-Bit. The Number of BRAM interfaces is set to 1 to simplify the design.
-
-![M_AXI_LITE BRAM Controller Protocol is AXI4LITE](img/AXI_BRAM_Controller_Block_Properties_AXILite.png)
 
 
 #### Memory-Mapped Block Diagram
@@ -412,7 +421,7 @@ Generate a Memory Configuration File and follow your board's instructions for pr
 
 ## Creating an AXI4-Stream XDMA Block Diagram Design
 
-This procedure will recreate the design in [`xdma_stream.tcl`](xdma_stream.tcl). Start Vivado and choose *Create Project*:
+This procedure will recreate the design in [`xdma_stream.tcl`](xdma_stream.tcl), which can also be `source`'ed in Vivado and [retargeted to other FPGAs and/or boards](#recreating-a-project-from-a-tcl-file).
 
 ![Create Project](img/Vivado_Create_Project.png)
 
@@ -550,6 +559,10 @@ Connect its `S_AXI` port to a `M??_AXI` port of the SmartConnect block.
 
 ![BRAM Controller Block for each SmartConnectInterface](img/XDMA-Stream_SmartConnect_to_BRAM_Controller.png)
 
+Double-click the `axi_bram_ctrl_0` block connected to the PCIe **M_AXI_LITE** interface and choose *AXI4LITE* as the AXI Protocol which forces the Data Width to 32-Bit. The Number of BRAM interfaces is set to 1 to simplify the design.
+
+![M_AXI_LITE BRAM Controller Protocol is AXI4LITE](img/AXI_BRAM_Controller_Block_Properties_AXILITE_Full.png)
+
 Run Block Automation:
 
 ![Run Block Automation](img/Run_Block_Automation.png)
@@ -562,9 +575,7 @@ A [Block Memory Generator](https://docs.xilinx.com/v/u/en-US/pg058-blk-mem-gen) 
 
 ![Block Memory Generator for each BRAM Controller](img/SmartConnect_and_AXI_BRAM_Controller.png)
 
-Double-click the `axi_bram_ctrl_0` block connected to the PCIe **M_AXI_LITE** interface and choose *AXI4LITE* as the AXI Protocol which forces the Data Width to 32-Bit. The Number of BRAM interfaces is set to 1 to simplify the design.
 
-![M_AXI_LITE BRAM Controller Protocol is AXI4LITE](img/AXI_BRAM_Controller_Block_Properties_AXILITE_Full.png)
 
 
 ##### M_AXI_LITE BRAM Circuit Diagram
