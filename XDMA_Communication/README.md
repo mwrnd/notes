@@ -298,7 +298,11 @@ Add blocks for each SmartConnect interface and connect their `S_AXI` ports to th
 
 ![BRAM Controller Block for each SmartConnectInterface](img/BRAM_Controller_Blocks_for_each_SmartConnect_Interface.png)
 
-Run Block Automation and choose to generate a new Block Memory for each (*New Blk_Mem_Gen*):
+Run Block Automation:
+
+![Run Block Automation](img/Run_Block_Automation.png)
+
+Choose to generate a new Block Memory for each (*New Blk_Mem_Gen*):
 
 ![AXI BRAM Controller New Blk_Mem_Gen](img/AXI_BRAM_Controller_Block_Automation.png)
 
@@ -519,30 +523,134 @@ Set it up to convert its 32-Bit=4-Byte input into a 64-Bit=8-Byte output compati
 ![AXI4-Stream Data Width Converter Settings](img/AXI4Stream_Data_Width_Converter_Settings.png)
 
 
-#### M_AXI_LITE BRAM Circuit
+#### M_AXI_LITE Blocks
 
-The demo circuit includes a BRAM Block connected to **M_AXI_LITE**.
+##### Add M_AXI_LITE SmartConnect Block to XDMA Stream
+
+Add AXI SmartConnect:
+
+![Add AXI SmartConnect](img/Add_AXI_SmartConnect_IP.png)
+
+For this project only one of each interface is required.
+
+![SmartConnect Block Properties](img/SmartConnect_Block_Properties.png)
+
+Connect its *aclk* input to the `xdma_0` block's *axi_aclk* and its *aresetn* input to *axi_aresetn*. Connect the `S00_AXI` port of the SmartConnect block to `M_AXI` of the XDMA Block.
+
+![SmartConnect Blocks for each AXI Interface](img/XDMA-Stream_M_AXI_LITE_to_SmartConnect.png)
+
+
+##### Add BRAM Controller Blocks to XDMA Stream
+
+Add an AXI BRAM Controller:
+
+![Add AXI BRAM Controller](img/Add_AXI_BRAM_Controller_IP.png)
+
+Connect its `S_AXI` port to a `M??_AXI` port of the SmartConnect block.
+
+![BRAM Controller Block for each SmartConnectInterface](img/XDMA-Stream_SmartConnect_to_BRAM_Controller.png)
+
+Run Block Automation:
+
+![Run Block Automation](img/Run_Block_Automation.png)
+
+Choose to generate a new Block Memory (*New Blk_Mem_Gen*) for the BRAM Controller:
+
+![AXI BRAM Controller New Blk_Mem_Gen](img/AXI_BRAM_Controller_Single_Block_Automation.png)
+
+A [Block Memory Generator](https://docs.xilinx.com/v/u/en-US/pg058-blk-mem-gen) should appear for each BRAM Controller.
+
+![Block Memory Generator for each BRAM Controller](img/SmartConnect_and_AXI_BRAM_Controller.png)
+
+Double-click the `axi_bram_ctrl_0` block connected to the PCIe **M_AXI_LITE** interface and choose *AXI4LITE* as the AXI Protocol which forces the Data Width to 32-Bit. The Number of BRAM interfaces is set to 1 to simplify the design.
+
+![M_AXI_LITE BRAM Controller Protocol is AXI4LITE](img/AXI_BRAM_Controller_Block_Properties_AXILITE_Full.png)
+
+
+##### M_AXI_LITE BRAM Circuit Diagram
+
+Finished BRAM Block connected to **M_AXI_LITE**. Adding other low throughput register interface blocks such as GPIO is similarly accomplished by adding more **M??_AXI** ports to the SmartConnect Block.
 
 ![M_AXI_LITE BRAM Circuit](img/XDMA_Stream_M_AXI_LITE_Circuit.png)
 
 
-#### M_AXI_LITE Addresses
-
-If you decide to [add a BRAM Block](#add-bram-controller-blocks) or other peripheral to the **M_AXI_LITE** port, set up its addresses.
-
-![Set M_AXI_LITE Addresses](img/xdma_stream_AXILite_Addresses.png)
-
-
 #### Stream Block Diagram
 
-The resulting XDMA Stream Block Diagram:
+The resulting complete XDMA Stream Block Diagram:
 
 ![XDMA Stream Demo Block Diagram](img/XDMA_Stream_Demo_Block_Diagram.png)
 
 [Expanded view](img/xdma_stream_Block_Diagram.png).
 
 
-#### Generate Bitstream
+#### M_AXI_LITE Addresses
+
+Open the *Address Editor* tab, right-click and select *Assign All*:
+
+![Address Editor Assign All](img/Address_Editor_Assign_All.png)
+
+Edit the AXI Block addresses as required. The *Range* is the size that Vivado will implement for each block. If the value is too large for your target FPGA then Implementation will fail.
+
+![Set M_AXI_LITE Addresses](img/xdma_stream_AXILite_Addresses.png)
+
+
+#### XDMA Stream Constraints
+
+Right-click in the *Sources* window to *Add Sources*:
+
+![Add Sources](img/Add_Sources.png)
+
+Add or Create a Constraints File:
+
+![Add Constraints File](img/Add_Sources_Constraints.png)
+
+Create File:
+
+![Create File](img/Add_Sources_Create_File.png)
+
+Name the Constraints File:
+
+![Name the Constraints File](img/Create_Constraints_File.png)
+
+Double-click the `constraints.xdc` file to edit it.
+
+![Constraints File](img/Constraints_File.png)
+
+You will need to edit the PCIe TX/RX, Reset, and Clock signals to your board's pins. The TX/RX and Clock signals are differential but only the positive terminals need to be set as that restricts the other terminal. `CONFIG_MODE` and other `BITSTREAM` settings may also need to be set for your target board.
+```
+set_property PACKAGE_PIN AH36 [get_ports {pcie_7x_mgt_rtl_0_rxp[0]}]
+
+set_property PACKAGE_PIN AB27 [get_ports {diff_clock_rtl_0_clk_p[0]}]
+create_clock -name sys_clk -period 10.000 [get_ports diff_clock_rtl_0_clk_p]
+
+set_property PACKAGE_PIN F2 [get_ports reset_rtl_0]
+set_property IOSTANDARD LVCMOS33 [get_ports reset_rtl_0]
+set_false_path -from [get_ports reset_rtl_0]
+
+set_property CONFIG_MODE SPIx8 [current_design]
+set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
+# ... rest of BITSTREAM settings ...
+```
+
+![Edit constraints XDC File](img/Edit_constraints_XDC_File.png)
+
+
+#### XDMA Stream HDL Wrapper
+
+Right-click on your Block Diagram (`.bd`) design file and choose *Create HDL Wrapper*:
+
+![Create HDL Wrapper](img/Create_HDL_Wrapper.png)
+
+Let Vivado Manage the HDL Wrapper file:
+
+![Let Vivado Manage HDL Wrapper](img/Create_HDL_Wrapper_Vivado_Managed.png)
+
+
+#### Generate XDMA Stream Bitstream
+
+The source files should now be ready for Bitsream generation:
+
+![Sources Ready for Bitstream Generation](img/Sources_Ready_for_Bitstream_Generation.png)
 
 Generate the Bitstream:
 
@@ -551,6 +659,10 @@ Generate the Bitstream:
 Synthesis and Implementation should take about 10 minutes:
 
 ![Resources Used](img/XDMA_Stream_Demo_Resources_Used.png)
+
+Generate a Memory Configuration File and follow your board's instructions for programming.
+
+![Generate a Memory Configuration File](img/Generate_Memory_Configuration_File.png)
 
 
 
@@ -633,6 +745,7 @@ sudo reboot
 - [innova2_xdma_demo](https://github.com/mwrnd/innova2_xdma_demo) has notes on communicating with peripheral blocks such as GPIO and bandwidth testing of memory blocks using [dd](https://manpages.ubuntu.com/manpages/focal/en/man1/dd.1.html).
 - [Xilinx DMA PCIe Tutorial](https://www.linkedin.com/pulse/xilinx-dma-pcie-tutorial-part-1-roy-messinger) by Roy Messinger on LinkedIn goes into the theory behind PCIe DMA and how XDMA block settings are related.
 - [PCI Express TLP Primer](https://xillybus.com/tutorials/pci-express-tlp-pcie-primer-tutorial-guide-1) by Eli Billauer of [Xillybus](https://xillybus.com/) is a quick introduction to the PCIe Transaction Layer.
+- [AXI Basics 1 - Introduction to AXI](https://support.xilinx.com/s/article/1053914)
 
 
 
