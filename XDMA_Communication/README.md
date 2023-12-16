@@ -331,7 +331,7 @@ Click on the Block to Select it:
 
 Press CTRL-R to rotate the block:
 
-![Rotate Block with CTRL-R](img/IP_Block_Rotate_with_CTRL-R_2.png)
+![Rotate Block with CTRL-R](img/IP_Block_Rotate_with_CTRL-R.png)
 
 
 #### Memory-Mapped Block Diagram
@@ -587,7 +587,7 @@ Click on the Block to Select it:
 
 Press CTRL-R to rotate the block:
 
-![Rotate Block with CTRL-R](img/IP_Block_Rotate_with_CTRL-R_2.png)
+![Rotate Block with CTRL-R](img/IP_Block_Rotate_with_CTRL-R.png)
 
 
 ##### M_AXI_LITE BRAM Circuit Diagram
