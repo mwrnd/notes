@@ -325,7 +325,13 @@ A [Block Memory Generator](https://docs.xilinx.com/v/u/en-US/pg058-blk-mem-gen) 
 
 ![Block Memory Generator for each BRAM Controller](img/Block_Memory_Generator_Blocks_for_each_BRAM_Controller.png)
 
+Click on the Block to Select it:
 
+![Select IP Block](img/IP_Block_Select.png)
+
+Press CTRL-R to rotate the block:
+
+![Rotate Block with CTRL-R](img/IP_Block_Rotate_with_CTRL-R_2.png)
 
 
 #### Memory-Mapped Block Diagram
@@ -575,7 +581,13 @@ A [Block Memory Generator](https://docs.xilinx.com/v/u/en-US/pg058-blk-mem-gen) 
 
 ![Block Memory Generator for each BRAM Controller](img/Block_Memory_Generator_and_BRAM_Controller.png)
 
+Click on the Block to Select it:
 
+![Select IP Block](img/IP_Block_Select.png)
+
+Press CTRL-R to rotate the block:
+
+![Rotate Block with CTRL-R](img/IP_Block_Rotate_with_CTRL-R_2.png)
 
 
 ##### M_AXI_LITE BRAM Circuit Diagram
