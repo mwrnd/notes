@@ -740,7 +740,7 @@ Generate the Bitstream:
 
 
 
-## Install dma_ip_drivers
+## Install XDMA Driver from dma_ip_drivers
 
 Download and extract the November 10, 2023, commit a93d4a4 version of Xilinx's [DMA IP Drivers](https://github.com/Xilinx/dma_ip_drivers/tree/a93d4a4870e41d152b33aebb3f869eefb11aa691).
 ```Shell
