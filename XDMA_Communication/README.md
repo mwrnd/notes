@@ -22,7 +22,7 @@ ssize_t pwrite(int fd, const void *buf, size_t count, off_t offset);
 
 
 
-## Memory-Mapped
+## Software Access to Memory-Mapped Blocks
 
 See [Creating a Memory-Mapped XDMA Block Diagram Design](#creating-a-memory-mapped-xdma-block-diagram-design) below for instructions to re create the simple included demo, [`xdma_mm.tcl`](xdma_mm.tcl). It can also be [retargeted to other FPGAs and/or boards](#recreating-a-project-from-a-tcl-file). [Configuration bitstreams are available](https://github.com/mwrnd/notes/releases/v0.1.0/) for the [Innova-2](https://github.com/mwrnd/innova2_flex_xcku15p_notes).
 
@@ -41,7 +41,7 @@ The [BRAM Controller Block](https://docs.xilinx.com/v/u/en-US/pg078-axi-bram-ctr
 
 ![M_AXI Addresses](img/Address_Editor_M_AXI.png)
 
-The following is some minimal C code without error checking. Observe the `buffer` is defined as an array of [32-Bit unsigned integers (`uint32_t`)](https://manpages.ubuntu.com/manpages/trusty/en/man7/stdint.h.7posix.html) and is used as such but `pread`/`pwrite` operate on bytes, hence the `#define`s for `DATA_BYTES` and `DATA_WORDS`. `/dev/xdma0_h2c_0` is opened as Write-Only ([`O_WRONLY`](https://manpages.ubuntu.com/manpages/trusty/en/man2/open.2.html)) so reads from it will fail. `/dev/xdma0_c2h_0` is opened as Read-Only ([`O_RDONLY`](https://manpages.ubuntu.com/manpages/trusty/en/man2/open.2.html)) so writes to it will fail.
+The following is some minimal C code without error checking. Observe the `buffer` is defined as an array of [32-Bit unsigned integers (`uint32_t`)](https://manpages.ubuntu.com/manpages/trusty/en/man7/stdint.h.7posix.html) and is used as such but `pread`/`pwrite` operate on bytes, hence the `#define`s for `DATA_BYTES` and `DATA_WORDS`. `/dev/xdma0_h2c_0` is opened as Write-Only ([`O_WRONLY`](https://manpages.ubuntu.com/manpages/trusty/en/man2/open.2.html)). `/dev/xdma0_c2h_0` is opened as Read-Only ([`O_RDONLY`](https://manpages.ubuntu.com/manpages/trusty/en/man2/open.2.html)).
 ```C
 #define DATA_BYTES    8192
 #define DATA_WORDS    (DATA_BYTES/4)
