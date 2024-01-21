@@ -11,7 +11,7 @@ Tutorial for an [XDMA](https://docs.xilinx.com/r/en-US/pg195-pcie-dma/Introducti
       * [M_AXI](#m_axi)
       * [M_AXI_LITE](#m_axi_lite)
       * [AXI-Stream](#axi-stream)
-   * [Creating a Memory-Mapped XDMA Block Diagram Design](#creating-a-memory-mapped-xdma-block-diagram-design
+   * [Creating a Memory-Mapped XDMA Block Diagram Design](#creating-a-memory-mapped-xdma-block-diagram-design)
    * [Creating an AXI4-Stream XDMA Block Diagram Design](#creating-an-axi4-stream-xdma-block-diagram-design)
    * [Recreating a Project from a Tcl File](#recreating-a-project-from-a-tcl-file)
    * [Porting the Design to Another FPGA](#porting-the-design-to-another-fpga)
