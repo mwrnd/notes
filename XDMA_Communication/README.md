@@ -496,7 +496,7 @@ Set the PCIe ID *Base Class* to **Memory Controller** as the *Sub Class* to **Ot
 
 ![PCIe ID Settings](img/XDMA_Settings_PCIe_ID.png)
 
-A *PCIe to AXI Translation* offset is useful to make sure the *Size* of your AXI Lite BAR overlaps the address space of all peripheral blocks. This is useful when a soft-core processor has its [peripherals in some specific address range](https://en.wikipedia.org/wiki/Memory-mapped_I/O_and_port-mapped_I/O). The offset can be `0` or [larger than *Size*](https://support.xilinx.com/s/question/0D52E00006hpbPJSAY/pcie-to-axi-translation-setting-for-dma-bypass-interface-not-being-applied?language=en_US): `0x40000000 > 1MB==1048576==0x100000`.
+A *PCIe to AXI Translation* offset is useful to make sure the *Size* of your AXI Lite BAR overlaps the address space of all peripheral blocks. This is useful when a soft-core processor has its [peripherals in some specific address range](https://en.wikipedia.org/wiki/Memory-mapped_I/O_and_port-mapped_I/O). The offset can be `0` or [larger than *Size*](https://support.xilinx.com/s/question/0D52E00006hpbPJSAY/pcie-to-axi-translation-setting-for-dma-bypass-interface-not-being-applied?language=en_US): `0x40000000 > 1MB==1048576==0x100000`. This offset becomes the lowest accessible memory address. All IP Block addresses must be greater than the offset.
 
 ![AXI Lite BAR Setup](img/XDMA_Block_Properties_AXILite_BAR_Setup.png)
 
