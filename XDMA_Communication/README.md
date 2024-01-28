@@ -53,7 +53,7 @@ The **M_AXI** interface is for Direct Memory Access (DMA) to AXI blocks.
 
 ![M_AXI Network](img/M_AXI_Interface.png)
 
-The [BRAM Controller Block](https://docs.xilinx.com/v/u/en-US/pg078-axi-bram-ctrl) attached to the interface has an address of `0xC0000000` and a size of 8KB (smallest that will consistently work).
+The [BRAM Controller Block](https://docs.xilinx.com/v/u/en-US/pg078-axi-bram-ctrl) attached to the interface has an address of `0xC0000000` and a size of 8KB (smallest that will consistently work). You can increase the *Size*/*Range* up to the maximum that Vivado will successfully implement based on your FPGA's resources.
 
 ![M_AXI Addresses](img/Address_Editor_M_AXI.png)
 
@@ -119,7 +119,7 @@ The **M_AXI_LITE** interface is useful for single word access to register-like b
 
 ![M_AXI_LITE Network](img/M_AXI_LITE_Interface.png)
 
-The [BRAM Controller Block](https://docs.xilinx.com/v/u/en-US/pg078-axi-bram-ctrl) attached to the interface has an address of `0x40010000` and a size of 8KB (smallest that will consistently work).
+The [BRAM Controller Block](https://docs.xilinx.com/v/u/en-US/pg078-axi-bram-ctrl) attached to the interface has an address of `0x40010000` and a size of 8KB (smallest that will consistently work). You can increase the *Size*/*Range* up to the maximum that Vivado will successfully implement based on your FPGA's resources.
 
 ![M_AXI_LITE Addresses](img/Address_Editor_M_AXI_LITE.png)
 
@@ -365,7 +365,7 @@ Open the *Address Editor* tab, right-click and select *Assign All*:
 
 ![Address Editor Assign All](img/Address_Editor_Assign_All.png)
 
-Edit the AXI Block addresses as required. The *Range* is the size that Vivado will implement for each block. If the value is too large for your target FPGA then Implementation will fail. Larger sizes may have timing issues as more FPGA resources that are further apart are needed. Even though each Network can have overlapping addresses, avoid this as it can lead to confusion.
+Edit the AXI Block addresses as required. The *Range* is the size that Vivado will implement for each block and this is where you set it. If the value is too large for your target FPGA then Implementation will fail. Larger sizes may have timing issues as more FPGA resources that are further apart are needed. Even though each Network can have overlapping addresses, avoid this as it can lead to confusion.
 
 ![AXI Addresses](img/Address_Editor.png)
 
@@ -630,7 +630,7 @@ Open the *Address Editor* tab, right-click and select *Assign All*:
 
 ![Address Editor Assign All](img/Address_Editor_1Network_Assign_All.png)
 
-Edit the AXI Block addresses as required. The *Range* is the size that Vivado will implement for each block. If the value is too large for your target FPGA then Implementation will fail. Larger sizes may have timing issues as more FPGA resources that are further apart are needed.
+Edit the AXI Block addresses as required. The *Range* is the size that Vivado will implement for each block and this is where you set it. If the value is too large for your target FPGA then Implementation will fail. Larger sizes may have timing issues as more FPGA resources that are further apart are needed.
 
 ![Set M_AXI_LITE Addresses](img/xdma_stream_AXILite_Addresses.png)
 
