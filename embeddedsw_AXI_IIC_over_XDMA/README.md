@@ -33,7 +33,7 @@ The only relevant AXI address is the `0x40060000` of the `IIC_0` Block.
 
 Xilinx's [embeddedsw Library](https://github.com/Xilinx/embeddedsw) contains drivers for Xilinx IP Blocks. The drivers are designed to work with various processor cores such as MicroBlaze, Zynq/ARM, or RISCV that are on the same AXI Bus as the IP Blocks. The drivers map AXI Bus IP Blocks to the processor's own memory. Any `AXI_LITE`-compatible Xilinx IP Blocks that work in polled mode can therefore be communicated with over XDMA by memory-mapping the IP Block memory.
 
-Refer to the [XDMA Communication Tutorial](https://github.com/mwrnd/notes/tree/main/XDMA_Communication) for instructions on setting up [Xilinx's XDMA Drivers](https://github.com/Xilinx/dma_ip_drivers/tree/master/XDMA/linux-kernel).
+Refer to the [XDMA Communication Tutorial](https://github.com/mwrnd/notes/tree/main/XDMA_Communication) for instructions on using and setting up [Xilinx's XDMA Drivers](https://github.com/Xilinx/dma_ip_drivers/tree/master/XDMA/linux-kernel).
 
 
 
@@ -74,6 +74,7 @@ SRC_FILES += ./embeddedsw/XilinxProcessorIPLib/drivers/iic/src/xiic_sinit.c
 SRC_FILES += ./embeddedsw/XilinxProcessorIPLib/drivers/iic/src/xiic_slave.c
 SRC_FILES += ./embeddedsw/XilinxProcessorIPLib/drivers/iic/src/xiic_stats.c
 
+# Omit the following which are platform specific and break on x86_64
 # SRC_FILES += ./embeddedsw/lib/bsp/standalone/src/common/xplatform_info.c
 # SRC_FILES += ./embeddedsw/lib/bsp/standalone/src/common/xil_sleepcommon.c
 ```
