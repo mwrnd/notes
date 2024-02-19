@@ -21,7 +21,7 @@ The only relevant AXI address is the `0x40060000` of the `IIC_0` Block.
 | -------------------------- |:-------------:| :----: |
 | `M_AXI` `BRAM_CTRL_1`      |  0x00000000   |  128K  |
 | `M_AXI_LITE` `BRAM_CTRL_0` |  0x40040000   |   64K  |
-| `M_AXI_LITE` `GPIO_3`      |  0x40050000   |   64K  |
+| `M_AXI_LITE` `GPIO_0`      |  0x40050000   |   64K  |
 | `M_AXI_LITE` `IIC_0`       |  0x40060000   |   64K  |
 
 ![XDMA with AXI IIC Addresses](img/innova2_xdma_opencapi_AXI_Addresses.png)
