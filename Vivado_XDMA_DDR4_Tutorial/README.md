@@ -2,6 +2,8 @@
 
 This tutorial goes through the steps of generating a basic XDMA and DDR4 Block Diagram Design in Vivado for the [XCKU15P](https://www.xilinx.com/products/silicon-devices/fpga/kintex-ultrascale-plus.html) FPGA in the [Innova-2](https://github.com/mwrnd/innova2_flex_xcku15p_notes).
 
+The [XDMA Communication](../XDMA_Communication) notes have newer and simpler design instructions.
+
 Under [Linux](https://github.com/mwrnd/innova2_flex_xcku15p_notes#system-setup), start Vivado with:
 ```
 sudo /tools/Xilinx/Vivado/2021.2/bin/vivado
@@ -231,7 +233,7 @@ Vivado should generate a *GPIO_0* port.
  
 ![GPIO_0 External Signal](img/Make_GPIO_Output_External.png)
 
-Connect the GPIO Block (*S_AXI*) to the SmartConnect Block (*M02_AXI*). Use SmartConnect *aclk1* for *axi_aclk* and SmartConnect *aresetn* for *axi_aresetn*. The picture below is wrong, use **aclk1**!.
+Connect the GPIO Block (*S_AXI*) to the SmartConnect Block (*M02_AXI*). Use SmartConnect *aclk1* for *s_axi_aclk* and SmartConnect *aresetn* for *s_axi_aresetn*. The picture below is wrong, **aclk1**, the 100MHz clock, is to be used for the AXI Blocks.
 
 ![Connect GPIO Output to SmartConnect](img/Connect_GPIO_Output_to_SmartConnect.png)
 
