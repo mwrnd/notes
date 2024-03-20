@@ -4,6 +4,8 @@ This tutorial goes through the steps of generating a basic XDMA and DDR4 Block D
 
 The [XDMA Communication](../XDMA_Communication) notes have newer and simpler design instructions.
 
+The [innova2_8gb_adlt_xdma_ddr4_demo](https://github.com/mwrnd/innova2_8gb_adlt_xdma_ddr4_demo) project is a more refined and tested implementation of everything in these notes.
+
 Under [Linux](https://github.com/mwrnd/innova2_flex_xcku15p_notes#system-setup), start Vivado with:
 ```
 sudo /tools/Xilinx/Vivado/2021.2/bin/vivado
