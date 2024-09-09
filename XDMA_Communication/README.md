@@ -194,6 +194,7 @@ for (int i = 0; i < H2C_FLOAT_COUNT; i++) { h2c_data[i]=(3.14*(i+1)); }
 
 
 // write data buffer to the AXI Stream - a float is 4-bytes
+// A Stream has no addresses so use 0 explicitly for consistency
 rc = pwrite(xdma_fd_wrte, h2c_data, (H2C_FLOAT_COUNT * 4), 0);
 printf("Write returned rc = %ld = number of bytes sent\n", rc);
 
